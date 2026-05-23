@@ -16,7 +16,7 @@ app.use(express.json());
 
 // ==================== WORD LISTS ====================
 // Loaded from external file to keep server.js clean
-const wordlists = require('./wordlists.json');
+const wordlists = require('./words.js');
 const JUSTONE_WORDS = wordlists.JUSTONE_WORDS;
 const IMPOSTOR_CATEGORIES = wordlists.IMPOSTOR_CATEGORIES;
 
