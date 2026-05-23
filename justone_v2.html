@@ -443,7 +443,7 @@
             $('lobbyDifficulty').innerHTML = `<div class="diff-card"><div class="diff-label">Dificuldade</div><div style="font-size:16px;font-weight:700;color:${d==='easy'?'#22c55e':d==='hard'?'#ef4444':'#f59e0b'}">${labels[d]}</div></div>`;
         }
         $('lobbyStartBtn').innerHTML = state.isHost
-            ? `<button class="btn btn-primary" onclick="doAction('start_game')" ${state.players.length<3?'disabled':''}>${state.players.length<3?'Precisas de '+(3-state.players.length)+' jogador(es) mais':'Começar Jogo'}</button>`
+            ? `<button class="btn btn-primary" onclick="doAction('start_game')" ${state.players.length<2?'disabled':''}>${state.players.length<2?'Precisas de '+(2-state.players.length)+' jogador(es) mais':'Começar Jogo'}</button>`
             : '<div class="waiting">A aguardar que o anfitrião comece<span class="dots"></span></div>';
     }
 
