@@ -292,7 +292,6 @@ function handleApi(req, res) {
         if (roomCode.length !== 4) return error('Código deve ter 4 letras!');
         const room = loadRoom(roomCode);
         if (!room) return error('Sala não encontrada!');
-        if (room.players.length >= 15) return error('Sala cheia!');
         let found = false;
         for (const pl of room.players) { if (pl.id === playerId) { pl.name = name; found = true; break; } }
         if (!found) {
