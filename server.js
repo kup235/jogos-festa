@@ -341,7 +341,8 @@ function handleApi(req, res) {
     case 'start_game': {
         const room = loadRoom(roomCode); if (!room) return error('Sala não encontrada!');
         if (room.host !== playerId) return error('Só o anfitrião pode começar!');
-        if (room.players.length < 3) return error('Precisas de pelo menos 3 jogadores!');
+        const minPlayers = room.game === 'justone' ? 2 : 3;
+        if (room.players.length < minPlayers) return error(`Precisas de pelo menos ${minPlayers} jogadores!`);
         room.activePlayers = room.players.map(pl => pl.id);
         if (room.game === 'justone') justoneNewRound(room); else impostorNewRound(room);
         saveRoom(room); respond({ ok: true, state: getSafeState(room, playerId) }); break;
