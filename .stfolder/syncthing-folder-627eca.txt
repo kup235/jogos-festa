@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: assxf-knet9
+created: 2026-03-09T17:33:58Z

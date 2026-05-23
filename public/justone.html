@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a1a">
+    <title>Just One</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --bg: #0a0a1a;
+            --card: rgba(255,255,255,0.06);
+            --border: rgba(255,255,255,0.08);
+            --text: #fff;
+            --dim: #8888aa;
+            --accent: #8b5cf6;
+            --accent2: #a78bfa;
+            --green: #22c55e;
+            --red: #ef4444;
+            --gold: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 40% 30%, rgba(139,92,246,0.12) 0%, transparent 50%),
+                        radial-gradient(circle at 60% 70%, rgba(99,102,241,0.08) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(20px, -20px); }
+            66% { transform: translate(-15px, 15px); }
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            margin-bottom: 8px;
+        }
+        .top-bar .back {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 18px;
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .top-bar h1 {
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .room-code {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent2);
+        }
+
+        /* Screens */
+        .screen { display: none; flex-direction: column; flex: 1; }
+        .screen.active { display: flex; }
+
+        /* Shared UI components */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.1s;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #8b5cf6); }
+        .btn-green { background: linear-gradient(135deg, #059669, #22c55e); }
+        .btn-red { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .btn-ghost {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--dim);
+        }
+
+        .input-group { margin-bottom: 16px; }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus { border-color: var(--accent); }
+        .input-group input::placeholder { color: rgba(255,255,255,0.2); }
+
+        .players-list {
+            list-style: none;
+            padding: 0;
+        }
+        .players-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+        }
+        .players-list li:last-child { border-bottom: none; }
+        .players-list .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800;
+        }
+        .players-list .name { flex: 1; }
+        .players-list .host-badge {
+            font-size: 11px;
+            background: rgba(245,158,11,0.2);
+            color: var(--gold);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .players-list .score-badge {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent2);
+        }
+
+        /* Timer bar */
+        .timer-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .timer-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--red));
+            border-radius: 4px;
+            transition: width 1s linear;
+        }
+
+        /* Big word display */
+        .big-word {
+            text-align: center;
+            padding: 32px 16px;
+        }
+        .big-word .label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--dim);
+            margin-bottom: 8px;
+        }
+        .big-word .word {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f9d423, #ff4e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: wordPulse 2s ease-in-out infinite;
+        }
+        @keyframes wordPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* Clue cards */
+        .clue-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
+            margin-bottom: 8px;
+        }
+        .clue-card .clue-text {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .clue-card .clue-author {
+            font-size: 12px;
+            color: var(--dim);
+        }
+        .clue-card.removed {
+            opacity: 0.3;
+            text-decoration: line-through;
+        }
+        .clue-card .removed-badge {
+            font-size: 11px;
+            background: rgba(239,68,68,0.2);
+            color: var(--red);
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
+        /* Result display */
+        .result-display {
+            text-align: center;
+            padding: 24px 0;
+        }
+        .result-display .emoji {
+            font-size: 64px;
+            margin-bottom: 12px;
+            animation: resultBounce 0.5s ease;
+        }
+        @keyframes resultBounce {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .result-display .msg {
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .result-display .msg.correct { color: var(--green); }
+        .result-display .msg.wrong { color: var(--red); }
+
+        /* Round info */
+        .round-info {
+            text-align: center;
+            font-size: 13px;
+            color: var(--dim);
+            margin-bottom: 16px;
+        }
+        .round-info strong { color: var(--accent2); }
+
+        /* Waiting animation */
+        .waiting {
+            text-align: center;
+            padding: 24px;
+            color: var(--dim);
+        }
+        .waiting .dots::after {
+            content: '';
+            animation: dots 1.5s steps(3) infinite;
+        }
+        @keyframes dots {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #ef4444;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Status badge */
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status.guesser { background: rgba(245,158,11,0.2); color: var(--gold); }
+        .status.writer { background: rgba(139,92,246,0.2); color: var(--accent2); }
+        .status.submitted { background: rgba(34,197,94,0.2); color: var(--green); }
+
+        /* Scoreboard */
+        .scoreboard { margin-top: auto; }
+        .scoreboard-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .score-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .score-row:last-child { border-bottom: none; }
+        .score-row .rank {
+            font-size: 18px;
+            width: 28px;
+            text-align: center;
+        }
+        .score-row .sname { flex: 1; font-weight: 600; }
+        .score-row .spoints {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .spacer { flex: 1; }
+        .mt-8 { margin-top: 8px; }
+        .mt-16 { margin-top: 16px; }
+        .mb-16 { margin-bottom: 16px; }
+        .text-center { text-align: center; }
+        .text-dim { color: var(--dim); font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="app">
+        <!-- TOP BAR (hidden on menu) -->
+        <div class="top-bar" id="topBar" style="display:none">
+            <a href="/" class="back">‹</a>
+            <h1>💡 Just One</h1>
+            <div class="room-code" id="roomCodeDisplay">----</div>
+        </div>
+
+        <!-- ========== MENU ========== -->
+        <div class="screen active" id="screenMenu">
+            <div style="text-align:center; padding: 40px 0 24px;">
+                <div style="font-size:72px; margin-bottom:16px;">💡</div>
+                <h1 style="font-size:36px; font-weight:900; background: linear-gradient(135deg, #667eea, #8b5cf6); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Just One</h1>
+                <p style="color:var(--dim); margin-top:8px; font-size:15px;">O jogo das pistas únicas</p>
+            </div>
+
+            <div class="card">
+                <div class="input-group">
+                    <label>O teu nome</label>
+                    <input type="text" id="inputName" placeholder="Escreve o teu nome..." maxlength="15" autocomplete="off">
+                </div>
+                <button class="btn btn-primary mb-16" onclick="createRoom()">Criar Sala</button>
+
+                <div style="text-align:center; color:var(--dim); font-size:13px; margin-bottom:16px;">— ou —</div>
+
+                <div class="input-group">
+                    <label>Código da sala</label>
+                    <input type="text" id="inputCode" placeholder="ABCD" maxlength="4" style="text-transform:uppercase; text-align:center; font-size:24px; letter-spacing:8px; font-weight:800;" autocomplete="off">
+                </div>
+                <button class="btn btn-ghost" onclick="joinRoom()">Entrar na Sala</button>
+            </div>
+
+            <div style="margin-top:auto; padding-top:24px;">
+                <a href="/" class="btn btn-ghost" style="display:block;">← Voltar aos Jogos</a>
+            </div>
+        </div>
+
+        <!-- ========== LOBBY ========== -->
+        <div class="screen" id="screenLobby">
+            <div class="card">
+                <div style="text-align:center; margin-bottom:16px;">
+                    <div style="font-size:13px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px;">Código da Sala</div>
+                    <div style="font-size:36px; font-weight:900; letter-spacing:6px; color:var(--accent2);" id="lobbyCode">----</div>
+                    <div style="font-size:12px; color:var(--dim); margin-top:4px;">Partilha este código com os teus amigos</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="font-size:13px; font-weight:600; color:var(--dim); text-transform:uppercase; margin-bottom:8px;">
+                    Jogadores <span id="lobbyCount">(0)</span>
+                </div>
+                <ul class="players-list" id="lobbyPlayers"></ul>
+            </div>
+
+            <div class="spacer"></div>
+            <div id="lobbyStartBtn"></div>
+        </div>
+
+        <!-- ========== SHOW WORD ========== -->
+        <div class="screen" id="screenShowWord">
+            <div class="round-info">Ronda <strong id="showWordRound">1</strong> de <strong id="showWordMax">5</strong></div>
+            <div class="card" id="showWordContent"></div>
+            <div id="showWordAction"></div>
+        </div>
+
+        <!-- ========== WRITING ========== -->
+        <div class="screen" id="screenWriting">
+            <div class="round-info">Ronda <strong id="writingRound">1</strong> de <strong id="writingMax">5</strong></div>
+            <div class="timer-bar"><div class="fill" id="writingTimer"></div></div>
+            <div class="card" id="writingContent"></div>
+            <div id="writingAction"></div>
+        </div>
+
+        <!-- ========== REVIEW ========== -->
+        <div class="screen" id="screenReview">
+            <div class="round-info">Ronda <strong id="reviewRound">1</strong> de <strong id="reviewMax">5</strong></div>
+            <div class="card">
+                <div class="big-word">
+                    <div class="label">Palavra</div>
+                    <div class="word" id="reviewWord">---</div>
+                </div>
+            </div>
+            <div class="card">
+                <div style="font-size:13px; font-weight:600; color:var(--dim); text-transform:uppercase; margin-bottom:12px;">Pistas recebidas</div>
+                <div id="reviewClues"></div>
+            </div>
+            <div id="reviewAction" class="mt-16"></div>
+        </div>
+
+        <!-- ========== GUESSING ========== -->
+        <div class="screen" id="screenGuessing">
+            <div class="round-info">Ronda <strong id="guessingRound">1</strong> de <strong id="guessingMax">5</strong></div>
+            <div class="timer-bar"><div class="fill" id="guessingTimer"></div></div>
+            <div class="card" id="guessingContent"></div>
+            <div id="guessingAction"></div>
+        </div>
+
+        <!-- ========== RESULT ========== -->
+        <div class="screen" id="screenResult">
+            <div class="card">
+                <div class="result-display" id="resultDisplay"></div>
+                <div class="big-word">
+                    <div class="label">A palavra era</div>
+                    <div class="word" id="resultWord">---</div>
+                </div>
+                <div id="resultClues" class="mt-16"></div>
+            </div>
+            <div class="card">
+                <div class="scoreboard-title">Pontuação</div>
+                <div id="resultScores"></div>
+            </div>
+            <div id="resultAction" class="mt-16"></div>
+        </div>
+
+        <!-- ========== GAME OVER ========== -->
+        <div class="screen" id="screenGameover">
+            <div style="text-align:center; padding:24px 0;">
+                <div style="font-size:64px; margin-bottom:12px;">🏆</div>
+                <h2 style="font-size:28px; font-weight:900; background: linear-gradient(135deg, #f9d423, #f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Fim do Jogo!</h2>
+            </div>
+            <div class="card">
+                <div class="scoreboard-title">Classificação Final</div>
+                <div id="gameoverScores"></div>
+            </div>
+            <div id="gameoverAction" class="mt-16"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let state = null;
+
+        // ==================== CONNECTION ====================
+        socket.on('connect', () => console.log('Conectado'));
+        socket.on('error_msg', msg => showToast(msg));
+        socket.on('room_created', ({ code }) => { });
+        socket.on('room_joined', ({ code, game }) => { });
+        socket.on('state_update', newState => {
+            state = newState;
+            render();
+        });
+
+        // ==================== ACTIONS ====================
+        function createRoom() {
+            const name = document.getElementById('inputName').value.trim();
+            if (!name) return showToast('Escreve o teu nome!');
+            socket.emit('create_room', { game: 'justone', playerName: name });
+        }
+
+        function joinRoom() {
+            const name = document.getElementById('inputName').value.trim();
+            const code = document.getElementById('inputCode').value.trim();
+            if (!name) return showToast('Escreve o teu nome!');
+            if (code.length !== 4) return showToast('Código deve ter 4 letras!');
+            socket.emit('join_room', { code, playerName: name });
+        }
+
+        // ==================== RENDER ====================
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('topBar').style.display = state ? 'flex' : 'none';
+        }
+
+        function render() {
+            if (!state) return showScreen('screenMenu');
+
+            document.getElementById('roomCodeDisplay').textContent = state.code;
+
+            switch (state.phase) {
+                case 'lobby': renderLobby(); break;
+                case 'show_word': renderShowWord(); break;
+                case 'writing': renderWriting(); break;
+                case 'review': renderReview(); break;
+                case 'guessing': renderGuessing(); break;
+                case 'result': renderResult(); break;
+                case 'gameover': renderGameover(); break;
+            }
+        }
+
+        function renderLobby() {
+            showScreen('screenLobby');
+            document.getElementById('lobbyCode').textContent = state.code;
+            document.getElementById('lobbyCount').textContent = `(${state.players.length})`;
+
+            const list = document.getElementById('lobbyPlayers');
+            list.innerHTML = state.players.map(p => `
+                <li>
+                    <div class="avatar">${p.name[0].toUpperCase()}</div>
+                    <span class="name">${esc(p.name)}</span>
+                    ${p.isHost ? '<span class="host-badge">Anfitrião</span>' : ''}
+                    ${p.id === state.myId ? '<span style="color:var(--accent2); font-size:12px;">Tu</span>' : ''}
+                </li>
+            `).join('');
+
+            const btnDiv = document.getElementById('lobbyStartBtn');
+            if (state.isHost) {
+                btnDiv.innerHTML = `<button class="btn btn-primary" onclick="socket.emit('start_game')" ${state.players.length < 3 ? 'disabled' : ''}>
+                    ${state.players.length < 3 ? `Precisas de ${3 - state.players.length} jogador(es) mais` : 'Começar Jogo'}
+                </button>`;
+            } else {
+                btnDiv.innerHTML = '<div class="waiting">A aguardar que o anfitrião comece<span class="dots"></span></div>';
+            }
+        }
+
+        function renderShowWord() {
+            showScreen('screenShowWord');
+            document.getElementById('showWordRound').textContent = state.round;
+            document.getElementById('showWordMax').textContent = state.maxRounds;
+
+            const guesser = state.players[state.guesserIndex];
+            const content = document.getElementById('showWordContent');
+            const action = document.getElementById('showWordAction');
+
+            if (state.isGuesser) {
+                content.innerHTML = `
+                    <div style="text-align:center; padding:20px 0;">
+                        <div style="font-size:48px; margin-bottom:12px;">🔮</div>
+                        <h2 style="font-size:22px; font-weight:800; margin-bottom:8px;">Tu és o Adivinhador!</h2>
+                        <p class="text-dim">Os outros jogadores estão a ver a palavra secreta e vão escrever pistas para te ajudar.</p>
+                    </div>
+                `;
+                action.innerHTML = '<div class="waiting">A aguardar as pistas<span class="dots"></span></div>';
+            } else {
+                content.innerHTML = `
+                    <div style="text-align:center; font-size:13px; color:var(--dim); margin-bottom:8px;">
+                        <strong>${esc(guesser.name)}</strong> é o adivinhador
+                    </div>
+                    <div class="big-word">
+                        <div class="label">A Palavra Secreta</div>
+                        <div class="word">${esc(state.word)}</div>
+                    </div>
+                `;
+                if (state.isHost) {
+                    action.innerHTML = '<button class="btn btn-primary" onclick="socket.emit(\'justone_ready\')">Todos Viram → Escrever Pistas</button>';
+                } else {
+                    action.innerHTML = '<div class="waiting">A aguardar que todos vejam<span class="dots"></span></div>';
+                }
+            }
+        }
+
+        function renderWriting() {
+            showScreen('screenWriting');
+            document.getElementById('writingRound').textContent = state.round;
+            document.getElementById('writingMax').textContent = state.maxRounds;
+            updateTimer('writingTimer', state.timerEnd, 60000);
+
+            const guesser = state.players[state.guesserIndex];
+            const content = document.getElementById('writingContent');
+            const action = document.getElementById('writingAction');
+
+            if (state.isGuesser) {
+                content.innerHTML = `
+                    <div style="text-align:center; padding:20px 0;">
+                        <div style="font-size:48px; margin-bottom:12px;">🤔</div>
+                        <h2 style="font-size:20px; font-weight:800; margin-bottom:8px;">A aguardar pistas...</h2>
+                        <p class="text-dim">Os outros jogadores estão a escrever pistas para ti.</p>
+                        <div style="margin-top:16px; font-size:14px; color:var(--accent2); font-weight:600;">
+                            ${state.clueCount} de ${state.totalClueExpected} pistas recebidas
+                        </div>
+                    </div>
+                `;
+                action.innerHTML = '';
+            } else if (state.myClue) {
+                content.innerHTML = `
+                    <div style="text-align:center; padding:12px 0;">
+                        <div class="big-word" style="padding:12px;"><div class="label">Palavra</div><div class="word" style="font-size:28px;">${esc(state.word)}</div></div>
+                        <div style="margin-top:16px;">
+                            <span class="status submitted">✓ Pista enviada</span>
+                        </div>
+                        <div style="margin-top:12px; font-size:22px; font-weight:800; color:var(--accent2);">${esc(state.myClue)}</div>
+                        <p class="text-dim mt-8">${state.clueCount} de ${state.totalClueExpected} pistas recebidas</p>
+                    </div>
+                `;
+                action.innerHTML = '';
+            } else {
+                content.innerHTML = `
+                    <div class="big-word" style="padding:12px 0;"><div class="label">Palavra</div><div class="word" style="font-size:28px;">${esc(state.word)}</div></div>
+                    <p style="text-align:center; color:var(--dim); font-size:13px; margin-bottom:4px;">
+                        Adivinhador: <strong>${esc(guesser.name)}</strong> · ${state.clueCount}/${state.totalClueExpected} pistas
+                    </p>
+                `;
+                action.innerHTML = `
+                    <div class="input-group mt-16">
+                        <label>A tua pista (uma só palavra)</label>
+                        <input type="text" id="clueInput" placeholder="Escreve uma palavra..." maxlength="30" autocomplete="off" onkeydown="if(event.key==='Enter')submitClue()">
+                    </div>
+                    <button class="btn btn-primary" onclick="submitClue()">Enviar Pista</button>
+                `;
+                setTimeout(() => { const el = document.getElementById('clueInput'); if (el) el.focus(); }, 100);
+            }
+        }
+
+        function submitClue() {
+            const input = document.getElementById('clueInput');
+            if (!input) return;
+            const clue = input.value.trim();
+            if (!clue) return showToast('Escreve uma pista!');
+            if (clue.includes(' ')) return showToast('Apenas uma palavra!');
+            socket.emit('justone_clue', { clue });
+        }
+
+        function renderReview() {
+            showScreen('screenReview');
+            document.getElementById('reviewRound').textContent = state.round;
+            document.getElementById('reviewMax').textContent = state.maxRounds;
+            document.getElementById('reviewWord').textContent = state.word;
+
+            const cluesDiv = document.getElementById('reviewClues');
+            if (state.allClues) {
+                cluesDiv.innerHTML = state.allClues.map(c => `
+                    <div class="clue-card ${c.removed ? 'removed' : ''}">
+                        <span class="clue-text">${esc(c.clue)}</span>
+                        <span class="clue-author">${esc(c.playerName)}</span>
+                        ${c.removed ? '<span class="removed-badge">Duplicada</span>' : ''}
+                    </div>
+                `).join('');
+            }
+
+            const action = document.getElementById('reviewAction');
+            if (state.isHost) {
+                action.innerHTML = '<button class="btn btn-primary" onclick="socket.emit(\'justone_confirm_review\')">Mostrar Pistas ao Adivinhador</button>';
+            } else if (state.isGuesser) {
+                action.innerHTML = '<div class="waiting">O anfitrião está a rever as pistas<span class="dots"></span></div>';
+            } else {
+                action.innerHTML = '<div class="waiting">A aguardar revisão<span class="dots"></span></div>';
+            }
+        }
+
+        function renderGuessing() {
+            showScreen('screenGuessing');
+            document.getElementById('guessingRound').textContent = state.round;
+            document.getElementById('guessingMax').textContent = state.maxRounds;
+            updateTimer('guessingTimer', state.timerEnd, 90000);
+
+            const content = document.getElementById('guessingContent');
+            const action = document.getElementById('guessingAction');
+
+            if (state.isGuesser) {
+                let cluesHtml = '';
+                if (state.visibleClues && state.visibleClues.length > 0) {
+                    cluesHtml = state.visibleClues.map(c => `
+                        <div class="clue-card">
+                            <span class="clue-text">${esc(c.clue)}</span>
+                            <span class="clue-author">${esc(c.playerName)}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    cluesHtml = '<div style="text-align:center; padding:16px; color:var(--red);">Todas as pistas foram eliminadas por serem duplicadas! 😱</div>';
+                }
+
+                content.innerHTML = `
+                    <div style="text-align:center; margin-bottom:16px;">
+                        <div style="font-size:36px; margin-bottom:8px;">🎯</div>
+                        <h2 style="font-size:18px; font-weight:800;">As tuas pistas:</h2>
+                    </div>
+                    ${cluesHtml}
+                `;
+
+                action.innerHTML = `
+                    <div class="input-group mt-16">
+                        <label>A tua resposta</label>
+                        <input type="text" id="guessInput" placeholder="Qual é a palavra?" maxlength="40" autocomplete="off" onkeydown="if(event.key==='Enter')submitGuess()">
+                    </div>
+                    <button class="btn btn-green mb-16" onclick="submitGuess()">Adivinhar!</button>
+                    <button class="btn btn-ghost" onclick="socket.emit('justone_skip')">Passar ✕</button>
+                `;
+                setTimeout(() => { const el = document.getElementById('guessInput'); if (el) el.focus(); }, 100);
+            } else {
+                content.innerHTML = `
+                    <div style="text-align:center; padding:24px 0;">
+                        <div style="font-size:48px; margin-bottom:12px;">🎯</div>
+                        <h2 style="font-size:20px; font-weight:800; margin-bottom:8px;">O adivinhador está a pensar...</h2>
+                        <p class="text-dim">A aguardar a resposta de <strong>${esc(state.players[state.guesserIndex]?.name)}</strong></p>
+                    </div>
+                `;
+                action.innerHTML = '';
+            }
+        }
+
+        function submitGuess() {
+            const input = document.getElementById('guessInput');
+            if (!input) return;
+            const guess = input.value.trim();
+            if (!guess) return showToast('Escreve a tua resposta!');
+            socket.emit('justone_guess', { guess });
+        }
+
+        function renderResult() {
+            showScreen('screenResult');
+
+            const display = document.getElementById('resultDisplay');
+            if (state.guessCorrect) {
+                display.innerHTML = '<div class="emoji">🎉</div><div class="msg correct">Correto!</div>';
+            } else {
+                display.innerHTML = `<div class="emoji">😢</div><div class="msg wrong">Errado!</div>
+                    <div style="font-size:16px; color:var(--dim); margin-top:8px;">Resposta: "${esc(state.guess)}"</div>`;
+            }
+
+            document.getElementById('resultWord').textContent = state.word;
+
+            const cluesDiv = document.getElementById('resultClues');
+            if (state.allClues) {
+                cluesDiv.innerHTML = '<div style="font-size:13px; font-weight:600; color:var(--dim); text-transform:uppercase; margin-bottom:8px;">Pistas</div>' +
+                    state.allClues.map(c => `
+                        <div class="clue-card ${c.removed ? 'removed' : ''}">
+                            <span class="clue-text">${esc(c.clue)}</span>
+                            <span class="clue-author">${esc(c.playerName)}</span>
+                            ${c.removed ? '<span class="removed-badge">Duplicada</span>' : ''}
+                        </div>
+                    `).join('');
+            }
+
+            renderScores('resultScores');
+
+            const action = document.getElementById('resultAction');
+            if (state.isHost) {
+                action.innerHTML = '<button class="btn btn-primary" onclick="socket.emit(\'justone_next\')">Próxima Ronda →</button>';
+            } else {
+                action.innerHTML = '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+            }
+        }
+
+        function renderGameover() {
+            showScreen('screenGameover');
+            renderScores('gameoverScores');
+
+            const action = document.getElementById('gameoverAction');
+            if (state.isHost) {
+                action.innerHTML = `
+                    <button class="btn btn-primary mb-16" onclick="socket.emit('new_game')">Jogar de Novo</button>
+                    <a href="/" class="btn btn-ghost">Voltar ao Menu</a>
+                `;
+            } else {
+                action.innerHTML = '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+            }
+        }
+
+        function renderScores(containerId) {
+            const sorted = [...state.players].sort((a, b) => b.score - a.score);
+            const medals = ['🥇', '🥈', '🥉'];
+            document.getElementById(containerId).innerHTML = sorted.map((p, i) => `
+                <div class="score-row">
+                    <div class="rank">${medals[i] || (i + 1)}</div>
+                    <div class="sname">${esc(p.name)} ${p.id === state.myId ? '<span style="color:var(--accent2); font-size:11px;">(tu)</span>' : ''}</div>
+                    <div class="spoints">${p.score} pt</div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== HELPERS ====================
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        let timerInterval;
+        function updateTimer(elementId, endTime, total) {
+            if (timerInterval) clearInterval(timerInterval);
+            const el = document.getElementById(elementId);
+            if (!endTime) { el.style.width = '100%'; return; }
+
+            function tick() {
+                const remaining = Math.max(0, endTime - Date.now());
+                el.style.width = (remaining / total * 100) + '%';
+                if (remaining <= 0) clearInterval(timerInterval);
+            }
+            tick();
+            timerInterval = setInterval(tick, 200);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // Save name to localStorage
+        document.getElementById('inputName').value = localStorage.getItem('jogoNome') || '';
+        document.getElementById('inputName').addEventListener('input', e => {
+            localStorage.setItem('jogoNome', e.target.value);
+        });
+
+        // Auto-join from URL params
+        const params = new URLSearchParams(location.search);
+        if (params.get('sala')) {
+            document.getElementById('inputCode').value = params.get('sala');
+        }
+    </script>
+</body>
+</html>

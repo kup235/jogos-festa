@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Cache</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+        .card{max-width:400px;width:100%;text-align:center}
+        .emoji{font-size:64px;margin-bottom:16px}
+        h1{font-size:24px;margin-bottom:8px;color:#a78bfa}
+        p{color:#8888aa;margin-bottom:24px;line-height:1.5}
+        .btn{display:block;width:100%;padding:16px;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;color:#fff;margin-bottom:12px;font-family:inherit}
+        .btn-primary{background:linear-gradient(135deg,#667eea,#8b5cf6)}
+        .btn-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#8888aa}
+        #status{margin-top:16px;font-size:14px;min-height:60px}
+        .ok{color:#22c55e}.err{color:#ef4444}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="emoji">🧹</div>
+        <h1>Limpar Cache</h1>
+        <p>Limpa todos os ficheiros em cache da app para obter a versão mais recente.</p>
+        <button class="btn btn-primary" onclick="limpar()">Limpar Tudo e Recarregar</button>
+        <button class="btn btn-ghost" onclick="window.location.href='index.html'">← Voltar</button>
+        <div id="status"></div>
+    </div>
+    <script>
+    async function limpar() {
+        var s = document.getElementById('status');
+        s.innerHTML = '<span style="color:#f59e0b">A limpar...</span>';
+        try {
+            // 1. Apagar todos os caches
+            var keys = await caches.keys();
+            for (var i = 0; i < keys.length; i++) {
+                await caches.delete(keys[i]);
+            }
+            s.innerHTML += '<br><span class="ok">✅ ' + keys.length + ' cache(s) apagado(s)</span>';
+
+            // 2. Desregistar service workers
+            if ('serviceWorker' in navigator) {
+                var regs = await navigator.serviceWorker.getRegistrations();
+                for (var j = 0; j < regs.length; j++) {
+                    await regs[j].unregister();
+                }
+                s.innerHTML += '<br><span class="ok">✅ ' + regs.length + ' service worker(s) removido(s)</span>';
+            }
+
+            // 3. Limpar localStorage das salas
+            localStorage.removeItem('jogos_room_justone');
+            localStorage.removeItem('jogos_room_impostor');
+            localStorage.removeItem('jogos_pending_invite');
+            s.innerHTML += '<br><span class="ok">✅ localStorage limpo</span>';
+
+            s.innerHTML += '<br><br><span style="color:#a78bfa;font-weight:700">A recarregar em 2 segundos...</span>';
+            setTimeout(function() {
+                window.location.href = 'index.html';
+            }, 2000);
+        } catch(e) {
+            s.innerHTML += '<br><span class="err">❌ Erro: ' + e.message + '</span>';
+        }
+    }
+    </script>
+</body>
+</html>

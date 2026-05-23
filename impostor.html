@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jogos">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.php?s=192">
+    <title>Impostor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--bg:#0a0a1a;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.08);--text:#fff;--dim:#8888aa;--accent:#ef4444;--accent2:#fca5a5;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--purple:#8b5cf6}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
+        .bg-glow{position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(239,68,68,0.1) 0%,transparent 50%),radial-gradient(circle at 70% 70%,rgba(245,158,11,0.06) 0%,transparent 50%);animation:bgFloat 20s ease-in-out infinite;z-index:0;pointer-events:none}
+        @keyframes bgFloat{0%,100%{transform:translate(0,0)}33%{transform:translate(20px,-20px)}66%{transform:translate(-15px,15px)}}
+        .app{position:relative;z-index:1;max-width:420px;margin:0 auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top, 0px));min-height:100dvh;display:flex;flex-direction:column}
+        .top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:8px}
+        .top-bar .back{background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:18px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+        .top-bar h1{font-size:18px;font-weight:800;background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .room-code{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:6px 12px;font-size:14px;font-weight:700;letter-spacing:2px;color:var(--accent2)}
+        .screen{display:none;flex-direction:column;flex:1}.screen.active{display:flex}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:12px}
+        .btn{display:block;width:100%;padding:16px;border:none;border-radius:16px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:transform 0.1s,opacity 0.1s;text-align:center;text-decoration:none;color:#fff}
+        .btn:active{transform:scale(0.97)}.btn:disabled{opacity:0.4;cursor:default;transform:none}
+        .btn-primary{background:linear-gradient(135deg,#dc2626,#ef4444)}
+        .btn-green{background:linear-gradient(135deg,#059669,#22c55e)}
+        .btn-purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6)}
+        .btn-ghost{background:var(--card);border:1px solid var(--border);color:var(--dim)}
+        .input-group{margin-bottom:16px}
+        .input-group label{display:block;font-size:13px;font-weight:600;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+        .input-group input{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:inherit;font-size:16px;outline:none;transition:border-color 0.2s}
+        .input-group input:focus{border-color:var(--accent)}.input-group input::placeholder{color:rgba(255,255,255,0.2)}
+        .players-list{list-style:none;padding:0}
+        .players-list li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:15px}
+        .players-list li:last-child{border-bottom:none}
+        .players-list .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#f97316);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+        .players-list .name{flex:1}.players-list .host-badge{font-size:11px;background:rgba(245,158,11,0.2);color:var(--gold);padding:2px 8px;border-radius:8px;font-weight:600}
+        .timer-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:4px;margin-bottom:16px;overflow:hidden}
+        .timer-bar .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:4px;transition:width 0.5s linear}
+        .big-word{text-align:center;padding:24px 16px}
+        .big-word .label{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px}
+        .big-word .word{font-size:42px;font-weight:900;background:linear-gradient(135deg,#f9d423,#ff4e50);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .role-reveal{text-align:center;padding:32px 16px}
+        .role-reveal .role-icon{font-size:80px;animation:ra 0.6s cubic-bezier(0.4,0,0.2,1)}
+        @keyframes ra{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.2) rotate(10deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+        .role-reveal h2{font-size:28px;font-weight:900;margin-top:16px}
+        .role-reveal h2.imp{background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .role-reveal h2.cit{background:linear-gradient(135deg,#22c55e,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .role-reveal .cat{margin-top:8px;font-size:14px;color:var(--dim)}
+        .role-reveal .sw{margin-top:16px;font-size:36px;font-weight:900;color:var(--gold)}
+        .role-reveal .sh{margin-top:16px;font-size:36px;font-weight:900;color:var(--red)}
+        .vote-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .vote-btn{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:16px;text-align:center;cursor:pointer;transition:all 0.15s;color:var(--text);font-family:inherit}
+        .vote-btn:active{transform:scale(0.95)}
+        .vote-btn.selected{border-color:var(--accent);background:rgba(239,68,68,0.15)}
+        .vote-btn .va{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;margin:0 auto 8px}
+        .vote-btn .vn{font-size:14px;font-weight:700}
+        .result-display{text-align:center;padding:24px 0}
+        .result-display .emoji{font-size:64px;margin-bottom:12px;animation:rb 0.5s ease}
+        @keyframes rb{0%{transform:scale(0)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+        .result-display .msg{font-size:22px;font-weight:800}
+        .round-info{text-align:center;font-size:13px;color:var(--dim);margin-bottom:16px}.round-info strong{color:var(--accent2)}
+        .waiting{text-align:center;padding:24px;color:var(--dim)}
+        .waiting .dots::after{content:'';animation:dots 1.5s steps(3) infinite}
+        @keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
+        .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#ef4444;color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);white-space:nowrap}
+        .toast.show{transform:translateX(-50%) translateY(0)}
+        .score-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}.score-row:last-child{border-bottom:none}
+        .score-row .rank{font-size:18px;width:28px;text-align:center}.score-row .sname{flex:1;font-weight:600}.score-row .spoints{font-size:18px;font-weight:800;color:var(--gold)}
+        .scoreboard-title{font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+        .ir{text-align:center;padding:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:16px;margin-top:12px}
+        .ir .irn{font-size:24px;font-weight:900;color:var(--red)}
+        .dtips{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:14px;padding:16px;margin-top:12px}
+        .dtips h3{font-size:14px;font-weight:700;color:var(--purple);margin-bottom:8px}
+        .dtips p{font-size:13px;color:var(--dim);line-height:1.5}
+        .spacer{flex:1}.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mb-16{margin-bottom:16px}.text-center{text-align:center}.text-dim{color:var(--dim);font-size:14px}
+        .diff-card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px}
+        .diff-label{font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px}
+        .diff-btns{display:flex;gap:8px}
+        .diff-btn{flex:1;padding:10px 0;border-radius:10px;border:2px solid #333;background:transparent;color:var(--dim);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s}
+        .diff-btn.active-easy{border-color:#22c55e;background:rgba(34,197,94,0.15);color:#22c55e}
+        .diff-btn.active-medium{border-color:#f59e0b;background:rgba(245,158,11,0.15);color:#f59e0b}
+        .diff-btn.active-hard{border-color:#ef4444;background:rgba(239,68,68,0.15);color:#ef4444}
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="app">
+        <div class="top-bar" id="topBar" style="display:none">
+            <span class="back" onclick="leaveRoom()" title="Sair da sala">‹</span>
+            <h1>🕵️ Impostor</h1>
+            <div class="room-code" id="roomCodeDisplay">----</div>
+        </div>
+
+        <!-- MENU -->
+        <div class="screen active" id="screenMenu">
+            <div style="text-align:center;padding:40px 0 24px">
+                <div style="font-size:72px;margin-bottom:16px">🕵️</div>
+                <h1 style="font-size:36px;font-weight:900;background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Impostor</h1>
+                <p style="color:var(--dim);margin-top:8px;font-size:15px">Descobre quem está a fingir!</p>
+            </div>
+            <div class="card">
+                <div class="input-group"><label>O teu nome</label><input type="text" id="inputName" placeholder="Escreve o teu nome..." maxlength="15" autocomplete="off"></div>
+                <button class="btn btn-primary mb-16" onclick="createRoom()">Criar Sala</button>
+                <div style="text-align:center;color:var(--dim);font-size:13px;margin-bottom:16px">— ou —</div>
+                <div class="input-group"><label>Código da sala</label><input type="text" id="inputCode" placeholder="ABCD" maxlength="4" style="text-transform:uppercase;text-align:center;font-size:24px;letter-spacing:8px;font-weight:800" autocomplete="off"></div>
+                <button class="btn btn-ghost" id="btnJoin" onclick="joinRoom()">Entrar na Sala</button>
+            </div>
+            <div style="margin-top:auto;padding-top:24px"><span class="btn btn-ghost" style="display:block;cursor:pointer" onclick="localStorage.removeItem('jogos_room_impostor');window.location.href='index.html'">← Voltar aos Jogos</span></div>
+        </div>
+
+        <!-- LOBBY -->
+        <div class="screen" id="screenLobby">
+            <div class="card"><div style="text-align:center;margin-bottom:16px"><div style="font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Código da Sala</div><div style="font-size:36px;font-weight:900;letter-spacing:6px;color:var(--accent2)" id="lobbyCode">----</div><div style="font-size:12px;color:var(--dim);margin-top:4px">Partilha este código com os teus amigos</div></div><button class="btn btn-green" onclick="shareInvite()" style="margin-top:8px">📲 Convidar por WhatsApp</button></div>
+            <div id="lobbyDifficulty"></div>
+            <div class="card"><div style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px">Jogadores <span id="lobbyCount">(0)</span></div><ul class="players-list" id="lobbyPlayers"></ul></div>
+            <div class="spacer"></div><div id="lobbyStartBtn"></div>
+        </div>
+
+        <!-- SHOW ROLE -->
+        <div class="screen" id="screenShowRole"><div class="round-info">Ronda <strong id="srRound">1</strong> de <strong id="srMax">5</strong></div><div class="card" id="srContent"></div><div id="srAction"></div></div>
+
+        <!-- DISCUSSION -->
+        <div class="screen" id="screenDiscussion"><div class="round-info">Ronda <strong id="dsRound">1</strong> de <strong id="dsMax">5</strong></div><div class="timer-bar"><div class="fill" id="dsTimer"></div></div><div class="card" id="dsContent"></div><div id="dsAction"></div></div>
+
+        <!-- VOTING -->
+        <div class="screen" id="screenVoting"><div class="round-info">Ronda <strong id="vtRound">1</strong> de <strong id="vtMax">5</strong></div><div class="timer-bar"><div class="fill" id="vtTimer"></div></div><div class="card"><div style="text-align:center;margin-bottom:16px"><div style="font-size:36px;margin-bottom:8px">🗳️</div><h2 style="font-size:20px;font-weight:800">Quem é o Impostor?</h2><p class="text-dim mt-8">Votos: <strong id="vtProgress">0/0</strong></p></div><div class="vote-grid" id="vtGrid"></div></div><div id="vtAction" class="mt-16"></div></div>
+
+        <!-- IMPOSTOR GUESS -->
+        <div class="screen" id="screenImpGuess"><div class="card" id="igContent"></div><div id="igAction"></div></div>
+
+        <!-- RESULT -->
+        <div class="screen" id="screenResult"><div class="card" id="resContent"></div><div class="card"><div class="scoreboard-title">Pontuação</div><div id="resScores"></div></div><div id="resAction" class="mt-16"></div></div>
+
+        <!-- GAME OVER -->
+        <div class="screen" id="screenGameover"><div style="text-align:center;padding:24px 0"><div style="font-size:64px;margin-bottom:12px">🏆</div><h2 style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#f9d423,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Fim do Jogo!</h2></div><div class="card"><div class="scoreboard-title">Classificação Final</div><div id="goScores"></div></div><div id="goAction" class="mt-16"></div></div>
+
+        <!-- SPECTATOR (entrou a meio do jogo) -->
+        <div class="screen" id="screenSpectator"><div style="text-align:center;padding:40px 0;"><div style="font-size:64px;margin-bottom:16px;">👀</div><h2 style="font-size:22px;font-weight:800;margin-bottom:8px;">Jogo em curso</h2><p class="text-dim">Entraste na sala! Vais jogar na próxima ronda.</p></div><div class="card"><div style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px;">Jogadores</div><ul class="players-list" id="specPlayers"></ul></div><div class="waiting" style="margin-top:24px">A aguardar o fim do jogo<span class="dots"></span></div></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const API = 'api.php';
+    let state = null, roomCode = null, pollTimer = null, selectedVote = null;
+    let myId = localStorage.getItem('jogos_pid');
+    if (!myId) { myId = crypto.randomUUID(); localStorage.setItem('jogos_pid', myId); }
+
+    async function api(action, data = {}) {
+        data.action = action; data.player_id = myId;
+        if (roomCode) data.room_code = roomCode;
+        try {
+            const ctrl = new AbortController();
+            const tid = setTimeout(() => ctrl.abort(), 5000);
+            const r = await fetch(API + '?_t=' + Date.now(), {
+                method: 'POST',
+                body: new URLSearchParams(data),
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+                signal: ctrl.signal
+            });
+            clearTimeout(tid);
+            const j = await r.json();
+            if (!j.ok && j.error && action !== 'get_state') showToast(j.error);
+            return j;
+        } catch(e) { return { ok: false }; }
+    }
+
+    let lastStateJSON = '';
+    let lastPhase = '';
+    let pollActive = false;
+    async function poll() {
+        if (!roomCode) return;
+        if (pollActive) return;
+        pollActive = true;
+        try {
+            const r = await api('get_state');
+            if (!r.ok) {
+                if (r.error === 'Não estás nesta sala!' || r.error === 'Sala não encontrada!') {
+                    stopPolling();
+                    roomCode = null;
+                    state = null;
+                    lastStateJSON = '';
+                    lastPhase = '';
+                    selectedVote = null;
+                    localStorage.removeItem('jogos_room_impostor');
+                    render();
+                }
+                return;
+            }
+            if (r.state) {
+                const newJSON = JSON.stringify(r.state);
+                const changed = newJSON !== lastStateJSON;
+                lastStateJSON = newJSON;
+                state = r.state;
+
+                if (state.phase !== lastPhase) {
+                    lastPhase = state.phase;
+                    render();
+                    return;
+                }
+
+                if (!changed) return;
+
+                const ae = document.activeElement;
+                const inputFocused = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA');
+                if (!inputFocused) {
+                    render();
+                } else {
+                    updateNonInputUI();
+                }
+            }
+        } finally {
+            pollActive = false;
+        }
+    }
+    function startPolling() { stopPolling(); pollActive = false; pollTimer = setInterval(poll, 1000); }
+    function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+    async function createRoom() {
+        const name = $('inputName').value.trim();
+        if (!name) return showToast('Escreve o teu nome!');
+        const r = await api('create_room', { game: 'impostor', name, difficulty: 'medium' });
+        if (r.ok) { roomCode = r.code; state = r.state; render(); startPolling(); }
+    }
+
+    async function setDifficulty(diff) {
+        await api('set_difficulty', { difficulty: diff });
+        poll();
+    }
+
+    async function joinRoom() {
+        const name = $('inputName').value.trim();
+        const code = $('inputCode').value.trim();
+        if (!name) return showToast('Escreve o teu nome!');
+        if (code.length !== 4) return showToast('Código deve ter 4 letras!');
+        const r = await api('join_room', { name, room_code: code });
+        if (r.ok) { roomCode = r.code; state = r.state; render(); startPolling(); }
+    }
+
+    async function doAction(action, data = {}) { await api(action, data); poll(); }
+
+    function $(id) { return document.getElementById(id); }
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        $(id).classList.add('active');
+        $('topBar').style.display = state ? 'flex' : 'none';
+    }
+
+    function render() {
+        if (!state) return showScreen('screenMenu');
+        $('roomCodeDisplay').textContent = state.code;
+        switch(state.phase) {
+            case 'lobby': renderLobby(); break;
+            case 'show_role': renderShowRole(); break;
+            case 'discussion': renderDiscussion(); break;
+            case 'voting': renderVoting(); break;
+            case 'impostor_guess': renderImpGuess(); break;
+            case 'result': renderResult(); break;
+            case 'gameover': renderGameover(); break;
+            case 'spectator': renderSpectator(); break;
+        }
+    }
+
+    function renderSpectator() {
+        showScreen('screenSpectator');
+        $('specPlayers').innerHTML = state.players.map(p => `<li><div class="avatar">${p.name[0].toUpperCase()}</div><span class="name">${esc(p.name)}</span>${p.isHost?'<span class="host-badge">Anfitrião</span>':''}${p.id===state.myId?'<span style="color:var(--accent2);font-size:12px">Tu</span>':''}</li>`).join('');
+    }
+
+    function renderLobby() {
+        showScreen('screenLobby');
+        $('lobbyCode').textContent = state.code;
+        $('lobbyCount').textContent = `(${state.players.length})`;
+        $('lobbyPlayers').innerHTML = state.players.map(p => `<li><div class="avatar">${p.name[0].toUpperCase()}</div><span class="name">${esc(p.name)}</span>${p.isHost?'<span class="host-badge">Anfitrião</span>':''}${p.id===state.myId?'<span style="color:var(--accent2);font-size:12px">Tu</span>':''}</li>`).join('');
+        const d = state.difficulty || 'medium';
+        const labels = {easy:'Fácil',medium:'Médio',hard:'Difícil'};
+        if (state.isHost) {
+            $('lobbyDifficulty').innerHTML = `<div class="diff-card"><div class="diff-label">Dificuldade</div><div class="diff-btns"><button class="diff-btn ${d==='easy'?'active-easy':''}" onclick="setDifficulty('easy')">Fácil</button><button class="diff-btn ${d==='medium'?'active-medium':''}" onclick="setDifficulty('medium')">Médio</button><button class="diff-btn ${d==='hard'?'active-hard':''}" onclick="setDifficulty('hard')">Difícil</button></div></div>`;
+        } else {
+            $('lobbyDifficulty').innerHTML = `<div class="diff-card"><div class="diff-label">Dificuldade</div><div style="font-size:16px;font-weight:700;color:${d==='easy'?'#22c55e':d==='hard'?'#ef4444':'#f59e0b'}">${labels[d]}</div></div>`;
+        }
+        $('lobbyStartBtn').innerHTML = state.isHost
+            ? `<button class="btn btn-primary" onclick="doAction('start_game')" ${state.players.length<3?'disabled':''}>${state.players.length<3?'Precisas de '+(3-state.players.length)+' jogador(es) mais':'Começar Jogo'}</button>`
+            : '<div class="waiting">A aguardar que o anfitrião comece<span class="dots"></span></div>';
+    }
+
+    function renderShowRole() {
+        showScreen('screenShowRole');
+        $('srRound').textContent=state.round; $('srMax').textContent=state.maxRounds;
+        if (state.isImpostor) {
+            $('srContent').innerHTML = `<div class="role-reveal"><div class="role-icon">🕵️</div><h2 class="imp">Tu és o Impostor!</h2>${state.category ? '<div class="cat">Categoria: <strong>'+esc(state.category)+'</strong></div>' : ''}<div class="sh">???</div><p class="text-dim mt-16">${state.category ? 'Sabes a categoria mas não a palavra! Finge que sabes.' : 'Não sabes a palavra nem a categoria! Finge que sabes e tenta não ser descoberto.'}</p></div>`;
+        } else {
+            $('srContent').innerHTML = `<div class="role-reveal"><div class="role-icon">😇</div><h2 class="cit">Tu és Inocente!</h2><div class="cat">Categoria: <strong>${esc(state.category)}</strong></div><div class="sw">${esc(state.word)}</div><p class="text-dim mt-16">Dá pistas subtis. Se fores muito óbvio, o impostor adivinha a palavra!</p></div>`;
+        }
+        $('srAction').innerHTML = `<button class="btn btn-primary" onclick="doAction('impostor_ready')">Estou Pronto!</button><p class="text-dim text-center mt-8">${state.readyCount} de ${state.players.length} prontos</p>`;
+    }
+
+    function renderDiscussion() {
+        showScreen('screenDiscussion');
+        $('dsRound').textContent=state.round; $('dsMax').textContent=state.maxRounds;
+        updateTimer('dsTimer', state.timerEnd, 120000);
+        let wi = state.isImpostor
+            ? `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:12px;margin-bottom:16px;text-align:center"><span style="font-size:12px;color:var(--red);font-weight:600">🕵️ TU ÉS O IMPOSTOR</span><br><span style="font-size:13px;color:var(--dim)">${state.category ? 'Categoria: <strong>'+esc(state.category)+'</strong>' : 'Tenta descobrir a palavra!'}</span></div>`
+            : `<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:12px;margin-bottom:16px;text-align:center"><span style="font-size:12px;color:var(--green);font-weight:600">😇 A TUA PALAVRA</span><br><span style="font-size:20px;font-weight:800;color:var(--gold)">${esc(state.word)}</span></div>`;
+        $('dsContent').innerHTML = `${wi}<div style="text-align:center"><div style="font-size:48px;margin-bottom:12px">💬</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Discussão!</h2><p class="text-dim">Cada jogador dá uma pista sobre a sua palavra.<br>Atenção: o impostor está a ouvir!</p></div><div class="dtips"><h3>💡 Dicas</h3><p>• Cada um diz uma palavra/frase curta relacionada<br>• Não sejam demasiado óbvios<br>• Observem quem hesita ou dá respostas vagas</p></div>`;
+        $('dsAction').innerHTML = state.isHost
+            ? `<button class="btn btn-primary mt-16" onclick="doAction('impostor_start_vote')">Começar Votação 🗳️</button>`
+            : '<div class="waiting">O anfitrião avança quando quiser<span class="dots"></span></div>';
+    }
+
+    function renderVoting() {
+        showScreen('screenVoting');
+        $('vtRound').textContent=state.round; $('vtMax').textContent=state.maxRounds;
+        updateTimer('vtTimer', state.timerEnd, 30000);
+        $('vtProgress').textContent = `${state.voteCount}/${state.players.length}`;
+        if (state.myVote) {
+            $('vtGrid').innerHTML = state.players.map(p => `<div class="vote-btn ${state.myVote===p.id?'selected':''}" style="cursor:default"><div class="va">${p.name[0].toUpperCase()}</div><div class="vn">${esc(p.name)}</div>${state.myVote===p.id?'<div style="color:var(--accent);font-size:12px;margin-top:4px">Teu voto</div>':''}</div>`).join('');
+            $('vtAction').innerHTML = '<div class="waiting">A aguardar outros votos<span class="dots"></span></div>';
+        } else {
+            $('vtGrid').innerHTML = state.players.filter(p=>p.id!==state.myId).map(p => `<div class="vote-btn ${selectedVote===p.id?'selected':''}" onclick="selVote('${p.id}')"><div class="va">${p.name[0].toUpperCase()}</div><div class="vn">${esc(p.name)}</div></div>`).join('');
+            $('vtAction').innerHTML = `<button class="btn btn-primary mt-16" onclick="confirmVote()" ${!selectedVote?'disabled':''}>Confirmar Voto</button>`;
+        }
+    }
+
+    function selVote(id) { selectedVote = id; renderVoting(); }
+    function confirmVote() {
+        if (!selectedVote) return showToast('Seleciona alguém!');
+        doAction('impostor_vote', { voted_for: selectedVote });
+        selectedVote = null;
+    }
+
+    function renderImpGuess() {
+        showScreen('screenImpGuess');
+        const imp = state.players[state.impostorIndex];
+        if (state.isImpostor) {
+            $('igContent').innerHTML = `<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">😱</div><h2 style="font-size:20px;font-weight:800;color:var(--red);margin-bottom:8px">Foste Apanhado!</h2><p class="text-dim">Mas ainda tens uma chance! Adivinha a palavra secreta para roubar a vitória.</p>${state.category ? '<p class="text-dim mt-8">Categoria: <strong style="color:var(--gold)">'+esc(state.category)+'</strong></p>' : ''}</div>`;
+            $('igAction').innerHTML = `<div class="input-group"><label>Qual era a palavra?</label><input type="text" id="igInput" placeholder="A tua resposta..." maxlength="40" autocomplete="off" onkeydown="if(event.key==='Enter')submitImpGuess()"></div><button class="btn btn-primary" onclick="submitImpGuess()">Adivinhar!</button>`;
+            setTimeout(()=>{const el=$('igInput');if(el)el.focus();},100);
+        } else {
+            $('igContent').innerHTML = `<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">🎯</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Impostor apanhado!</h2><div class="ir"><div style="font-size:12px;color:var(--dim)">O impostor era</div><div class="irn">${esc(imp.name)}</div></div><p class="text-dim mt-16">Mas o impostor pode ainda tentar adivinhar a palavra!</p></div>`;
+            $('igAction').innerHTML = '<div class="waiting">A aguardar a resposta do impostor<span class="dots"></span></div>';
+        }
+    }
+
+    function submitImpGuess() {
+        const el = $('igInput'); if(!el) return;
+        const guess = el.value.trim();
+        if (!guess) return showToast('Escreve a tua resposta!');
+        doAction('impostor_final_guess', { guess });
+    }
+
+    function renderResult() {
+        showScreen('screenResult');
+        const imp = state.players[state.impostorIndex];
+        let h = '';
+        if (state.impostorCaught) {
+            h = state.guessCorrect
+                ? `<div class="result-display"><div class="emoji">🕵️</div><div class="msg" style="color:var(--red)">Impostor adivinha a palavra!</div><p class="text-dim mt-8">${esc(imp.name)} foi apanhado mas adivinhou "<strong style="color:var(--gold)">${esc(state.guess)}</strong>"</p></div>`
+                : `<div class="result-display"><div class="emoji">🎉</div><div class="msg" style="color:var(--green)">Inocentes vencem!</div><p class="text-dim mt-8">${esc(imp.name)} foi apanhado e errou: "${esc(state.guess)}"</p></div>`;
+        } else {
+            h = `<div class="result-display"><div class="emoji">🕵️</div><div class="msg" style="color:var(--red)">O Impostor escapa!</div><p class="text-dim mt-8">Ninguém conseguiu descobrir quem era o impostor.</p></div>`;
+        }
+        h += `<div class="ir"><div style="font-size:12px;color:var(--dim)">O impostor era</div><div class="irn">${esc(imp.name)}</div></div><div class="big-word"><div class="label">A palavra secreta</div><div class="word">${esc(state.word)}</div></div>`;
+        $('resContent').innerHTML = h;
+        renderScores('resScores');
+        $('resAction').innerHTML = state.isHost ? `<button class="btn btn-primary" onclick="doAction('next_round')">Próxima Ronda →</button>` : '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+    }
+
+    function renderGameover() {
+        showScreen('screenGameover');
+        renderScores('goScores');
+        $('goAction').innerHTML = state.isHost
+            ? `<button class="btn btn-primary mb-16" onclick="doAction('new_game')">Jogar de Novo</button><span class="btn btn-ghost" style="display:block;cursor:pointer" onclick="leaveRoom()">Voltar ao Menu</span>`
+            : '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+    }
+
+    function renderScores(id) {
+        const s = [...state.players].sort((a,b)=>b.score-a.score);
+        const m = ['🥇','🥈','🥉'];
+        $(id).innerHTML = s.map((p,i)=>`<div class="score-row"><div class="rank">${m[i]||(i+1)}</div><div class="sname">${esc(p.name)}${p.id===state.myId?' <span style="color:var(--accent2);font-size:11px">(tu)</span>':''}</div><div class="spoints">${p.score} pt</div></div>`).join('');
+    }
+
+    function shareInvite() {
+        var base = location.origin + location.pathname.replace(/[^\/]*$/, '');
+        var link = base + 'convite.html?jogo=impostor&sala=' + state.code;
+        var msg = '🎮 Vem jogar Impostor comigo!\n\n🕵️ Sala: *' + state.code + '*\n\n👉 ' + link;
+
+        if (navigator.share) {
+            navigator.share({ title: 'Impostor - Jogos de Festa', text: msg }).catch(function(){});
+        } else {
+            var waUrl = 'https://wa.me/?text=' + encodeURIComponent(msg);
+            window.open(waUrl, '_blank');
+        }
+    }
+
+    // ===== LEAVE ROOM =====
+    function leaveRoom() {
+        if (!confirm('Tens a certeza que queres sair da sala?')) return;
+        var code = roomCode;
+        stopPolling();
+        // Avisar o servidor que saímos
+        if (code) {
+            try {
+                navigator.sendBeacon(API, new URLSearchParams({
+                    action: 'leave_room', room_code: code, player_id: myId
+                }));
+            } catch(e) {}
+        }
+        roomCode = null;
+        state = null;
+        lastStateJSON = '';
+        lastPhase = '';
+        selectedVote = null;
+        localStorage.removeItem('jogos_room_impostor');
+        render();
+    }
+
+    // ===== NON-DESTRUCTIVE UI UPDATE =====
+    function updateNonInputUI() {
+        if (!state) return;
+        $('roomCodeDisplay').textContent = state.code;
+        if (state.phase === 'discussion') updateTimer('dsTimer', state.timerEnd, 120000);
+        if (state.phase === 'voting') updateTimer('vtTimer', state.timerEnd, 30000);
+    }
+
+    function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+    let timerInt;
+    function updateTimer(elId,end,total){if(timerInt)clearInterval(timerInt);const el=$(elId);if(!end){el.style.width='100%';return;}function t(){const r=Math.max(0,end-Date.now());el.style.width=(r/total*100)+'%';if(r<=0)clearInterval(timerInt);}t();timerInt=setInterval(t,500);}
+    function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+    $('inputName').value = localStorage.getItem('jogoNome')||'';
+    $('inputName').addEventListener('input', e=>localStorage.setItem('jogoNome',e.target.value));
+    const params = new URLSearchParams(location.search);
+    if(params.get('sala')) $('inputCode').value = params.get('sala');
+
+    // Botão muda para vermelho quando código tem 4 caracteres
+    function updateJoinBtn() {
+        const btn = $('btnJoin');
+        if ($('inputCode').value.trim().length >= 4) {
+            btn.className = 'btn btn-primary';
+        } else {
+            btn.className = 'btn btn-ghost';
+        }
+    }
+    $('inputCode').addEventListener('input', updateJoinBtn);
+    updateJoinBtn();
+
+    // Reconectar automaticamente se tiver sala guardada
+    const savedRoom = localStorage.getItem('jogos_room_impostor');
+    if (savedRoom && !params.get('sala')) {
+        roomCode = savedRoom;
+        poll().then(() => {
+            if (state) {
+                // Sala existe, reconectar
+                startPolling();
+            } else {
+                // Sala já não existe, limpar
+                roomCode = null;
+                localStorage.removeItem('jogos_room_impostor');
+            }
+        });
+    }
+
+    // Guardar sala quando entrar
+    const origCreate = createRoom;
+    createRoom = async function() {
+        await origCreate();
+        if (roomCode) localStorage.setItem('jogos_room_impostor', roomCode);
+    };
+    const origJoin = joinRoom;
+    joinRoom = async function() {
+        await origJoin();
+        if (roomCode) localStorage.setItem('jogos_room_impostor', roomCode);
+    };
+    </script>
+</body>
+</html>

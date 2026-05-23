@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a1a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.php?s=192">
+    <title>Convite - Jogos de Festa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a1a;color:#fff;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:hidden}
+        .bg-glow{position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(139,92,246,0.15) 0%,transparent 50%),radial-gradient(circle at 70% 60%,rgba(239,68,68,0.1) 0%,transparent 50%);z-index:0;pointer-events:none}
+        .card{position:relative;z-index:1;max-width:380px;width:100%;text-align:center}
+        .emoji{font-size:80px;margin-bottom:16px;animation:bounce 2s ease-in-out infinite}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        h1{font-size:28px;font-weight:900;background:linear-gradient(135deg,#f9d423,#ff4e50,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+        .sub{color:#8888aa;font-size:15px;margin-bottom:28px}
+        .game-name{font-size:16px;font-weight:700;color:#a78bfa;margin-bottom:24px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .code-box{background:rgba(139,92,246,0.15);border:2px dashed rgba(139,92,246,0.4);border-radius:20px;padding:20px;margin-bottom:24px;cursor:pointer;transition:background 0.2s}
+        .code-box:active{background:rgba(139,92,246,0.25)}
+        .code-label{font-size:12px;color:#8888aa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+        .code{font-size:48px;font-weight:900;letter-spacing:10px;color:#a78bfa}
+        .code-tap{font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px}
+        .btn{display:block;width:100%;padding:16px;border:none;border-radius:16px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;text-align:center;color:#fff;margin-bottom:12px;transition:transform 0.1s}
+        .btn:active{transform:scale(0.97)}
+        .btn-primary{background:linear-gradient(135deg,#667eea,#8b5cf6)}
+        .btn-green{background:linear-gradient(135deg,#059669,#22c55e)}
+        .btn-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#8888aa}
+        .divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:#8888aa;font-size:13px}
+        .divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08)}
+        .copy-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#22c55e;color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100;transition:transform 0.3s;white-space:nowrap}
+        .copy-toast.show{transform:translateX(-50%) translateY(0)}
+        .steps{text-align:left;padding:16px 20px;background:rgba(255,255,255,0.04);border-radius:14px;margin-bottom:16px}
+        .steps .step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:14px;color:#ccc;line-height:1.4}
+        .steps .step:last-child{margin-bottom:0}
+        .steps .num{background:linear-gradient(135deg,#667eea,#8b5cf6);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:1px}
+        .hidden{display:none}
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- ECRÃ PRINCIPAL -->
+    <div class="card" id="screenInvite">
+        <div class="emoji" id="gameEmoji">🎮</div>
+        <h1>Foste Convidado!</h1>
+        <div class="game-name" id="gameName">💡 Just One</div>
+        <p class="sub">Alguém te convidou para jogar</p>
+
+        <div class="code-box" onclick="copyCode()">
+            <div class="code-label">Código da Sala</div>
+            <div class="code" id="salaCode">----</div>
+            <div class="code-tap">toca para copiar</div>
+        </div>
+
+        <div id="buttonsArea"></div>
+    </div>
+
+    <!-- ECRÃ REDIRECT (dentro da app) -->
+    <div class="card hidden" id="screenRedirect">
+        <div class="emoji">⏳</div>
+        <h1>A entrar na sala...</h1>
+        <p class="sub">A redirecionar para o jogo</p>
+    </div>
+
+    <div class="copy-toast" id="copyToast">✅ Código copiado!</div>
+
+    <script>
+    var params = new URLSearchParams(location.search);
+    var game = params.get('jogo') || 'justone';
+    var sala = (params.get('sala') || '').toUpperCase();
+    var gameFile = game === 'impostor' ? 'impostor.html' : 'justone.html';
+    var gameTitles = {
+        'justone': { name: '💡 Just One', emoji: '💡' },
+        'impostor': { name: '🕵️ Impostor', emoji: '🕵️' }
+    };
+
+    var info = gameTitles[game] || gameTitles['justone'];
+    document.getElementById('gameEmoji').textContent = info.emoji;
+    document.getElementById('gameName').textContent = info.name;
+    if (sala) document.getElementById('salaCode').textContent = sala;
+
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    var isStandalone = (window.matchMedia('(display-mode: standalone)').matches) ||
+                       (window.navigator.standalone === true);
+
+    // Se já estamos dentro da app (standalone) → redirecionar direto
+    if (isStandalone && sala) {
+        document.getElementById('screenInvite').classList.add('hidden');
+        document.getElementById('screenRedirect').classList.remove('hidden');
+        setTimeout(function() {
+            window.location.href = gameFile + '?sala=' + sala;
+        }, 500);
+    }
+
+    // Guardar convite pendente (funciona no Android, browser e PWA partilham localStorage)
+    if (sala) {
+        localStorage.setItem('jogos_pending_invite', JSON.stringify({
+            game: game, sala: sala, time: Date.now()
+        }));
+    }
+
+    // Construir botões dependendo da plataforma
+    var area = document.getElementById('buttonsArea');
+
+    if (isIOS) {
+        // iOS: o link NUNCA abre na PWA - foco em jogar no browser ou copiar código
+        area.innerHTML =
+            '<button class="btn btn-green" onclick="playInBrowser()">' +
+                '🎮 Jogar Agora' +
+            '</button>' +
+            '<div class="divider">já tens a app instalada?</div>' +
+            '<div class="steps">' +
+                '<div class="step"><div class="num">1</div><span>Toca no código acima para <strong style="color:#a78bfa">copiar</strong></span></div>' +
+                '<div class="step"><div class="num">2</div><span>Vai ao <strong style="color:#a78bfa">ecrã inicial</strong> e abre a app <strong style="color:#fff">Jogos de Festa</strong></span></div>' +
+                '<div class="step"><div class="num">3</div><span>Cola o código e entra na sala</span></div>' +
+            '</div>' +
+            '<button class="btn btn-ghost" onclick="copyAndHint()">' +
+                '📋 Copiar Código e Abrir App' +
+            '</button>';
+    } else {
+        // Android: localStorage é partilhado, "Abrir na App" funciona
+        area.innerHTML =
+            '<button class="btn btn-primary" onclick="openInApp()">' +
+                '📱 Abrir na App' +
+            '</button>' +
+            '<div class="divider">ou</div>' +
+            '<button class="btn btn-green" onclick="playInBrowser()">' +
+                '🌐 Jogar no Browser' +
+            '</button>';
+    }
+
+    function openInApp() {
+        // Android: guardar convite e abrir a app
+        if (sala) {
+            localStorage.setItem('jogos_pending_invite', JSON.stringify({
+                game: game, sala: sala, time: Date.now()
+            }));
+        }
+        // Navegar para o start_url - no Android pode abrir a PWA instalada
+        window.location.href = location.origin + '/jogos/index.html';
+    }
+
+    function playInBrowser() {
+        window.location.href = gameFile + '?sala=' + sala;
+    }
+
+    function copyAndHint() {
+        copyCode();
+        // Pequeno delay para mostrar o toast, depois mostrar instrução extra
+        setTimeout(function() {
+            alert('Código ' + sala + ' copiado!\n\nAgora vai ao ecrã inicial e abre a app "Jogos de Festa".\nCola o código no campo "Código da sala".');
+        }, 500);
+    }
+
+    function copyCode() {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(sala).then(showCopyToast).catch(fallbackCopy);
+        } else {
+            fallbackCopy();
+        }
+    }
+
+    function fallbackCopy() {
+        var ta = document.createElement('textarea');
+        ta.value = sala;
+        ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, 99);
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showCopyToast();
+    }
+
+    function showCopyToast() {
+        var t = document.getElementById('copyToast');
+        t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 2000);
+    }
+    </script>
+</body>
+</html>

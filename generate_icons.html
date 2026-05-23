@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Ícones - Jogos de Festa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a1a; color: white;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px 20px;
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; color: #a78bfa; }
+        .sub { color: #8888aa; margin-bottom: 32px; font-size: 15px; }
+        .icons-row { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; margin-bottom: 32px; }
+        .icon-box { text-align: center; }
+        .icon-box canvas { border-radius: 24px; box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3); display: block; margin: 0 auto; }
+        .icon-box .label { margin-top: 12px; color: #8888aa; font-size: 14px; }
+        .icon-box a {
+            display: inline-block; margin-top: 8px; padding: 8px 20px;
+            background: linear-gradient(135deg, #667eea, #8b5cf6);
+            color: white; text-decoration: none; border-radius: 10px;
+            font-weight: 600; font-size: 14px;
+        }
+        .icon-box a:active { opacity: 0.8; }
+        .info { margin-top: 24px; background: rgba(139,92,246,0.1); border-radius: 12px; padding: 20px; max-width: 500px; text-align: center; }
+        .info p { color: #a78bfa; font-size: 14px; line-height: 1.6; }
+        .info code { background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <h1>Gerar Icones PWA</h1>
+    <p class="sub">Clica para descarregar cada icone</p>
+    <div class="icons-row" id="icons-row"></div>
+    <div class="info">
+        <p>Depois de descarregar, mete os ficheiros na pasta:<br>
+        <code>jogos/icons/</code> no servidor</p>
+    </div>
+
+    <script>
+    var SIZES = [192, 512];
+    var container = document.getElementById('icons-row');
+
+    function drawIcon(size) {
+        var canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        var ctx = canvas.getContext('2d');
+        var s = size;
+
+        // Background gradient
+        var bgGrad = ctx.createLinearGradient(0, 0, s, s);
+        bgGrad.addColorStop(0, '#12082a');
+        bgGrad.addColorStop(0.4, '#1a0f3c');
+        bgGrad.addColorStop(0.7, '#150b30');
+        bgGrad.addColorStop(1, '#0a0618');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, s, s);
+
+        // Purple radial glow
+        var glow1 = ctx.createRadialGradient(s * 0.25, s * 0.3, 0, s * 0.25, s * 0.3, s * 0.55);
+        glow1.addColorStop(0, 'rgba(139, 92, 246, 0.25)');
+        glow1.addColorStop(0.5, 'rgba(139, 92, 246, 0.08)');
+        glow1.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow1;
+        ctx.fillRect(0, 0, s, s);
+
+        // Red radial glow
+        var glow2 = ctx.createRadialGradient(s * 0.75, s * 0.7, 0, s * 0.75, s * 0.7, s * 0.5);
+        glow2.addColorStop(0, 'rgba(239, 68, 68, 0.15)');
+        glow2.addColorStop(0.5, 'rgba(239, 68, 68, 0.05)');
+        glow2.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow2;
+        ctx.fillRect(0, 0, s, s);
+
+        // Circle glow
+        var circGlow = ctx.createRadialGradient(s * 0.5, s * 0.43, s * 0.2, s * 0.5, s * 0.43, s * 0.34);
+        circGlow.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
+        circGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = circGlow;
+        ctx.beginPath();
+        ctx.arc(s * 0.5, s * 0.43, s * 0.34, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Main purple circle
+        var circGrad = ctx.createLinearGradient(s * 0.3, s * 0.2, s * 0.7, s * 0.65);
+        circGrad.addColorStop(0, '#7c3aed');
+        circGrad.addColorStop(0.5, '#6d28d9');
+        circGrad.addColorStop(1, '#5b21b6');
+        ctx.fillStyle = circGrad;
+        ctx.beginPath();
+        ctx.arc(s * 0.5, s * 0.43, s * 0.26, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Glass highlight
+        var glassGrad = ctx.createLinearGradient(s * 0.35, s * 0.2, s * 0.55, s * 0.45);
+        glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+        glassGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.03)');
+        glassGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = glassGrad;
+        ctx.beginPath();
+        ctx.arc(s * 0.5, s * 0.43, s * 0.26, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Game controller emoji
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = s * 0.04;
+        ctx.shadowOffsetY = s * 0.015;
+        ctx.font = s * 0.28 + 'px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+        ctx.fillText('\uD83C\uDFAE', s * 0.5, s * 0.42);
+        ctx.restore();
+
+        // "JOGOS" text
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        var textGrad = ctx.createLinearGradient(s * 0.3, s * 0.72, s * 0.7, s * 0.72);
+        textGrad.addColorStop(0, '#f9d423');
+        textGrad.addColorStop(0.5, '#f59e0b');
+        textGrad.addColorStop(1, '#f9d423');
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = s * 0.03;
+        ctx.shadowOffsetY = s * 0.01;
+        ctx.font = '900 ' + (s * 0.11) + 'px "Segoe UI", "SF Pro Display", Arial, sans-serif';
+        ctx.fillStyle = textGrad;
+        ctx.fillText('JOGOS', s * 0.5, s * 0.73);
+        ctx.restore();
+
+        // "DE FESTA" text
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '600 ' + (s * 0.06) + 'px "Segoe UI", "SF Pro Display", Arial, sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = s * 0.02;
+        ctx.fillText('DE FESTA', s * 0.5, s * 0.84);
+        ctx.restore();
+
+        // Decorative dots
+        var dots = [
+            { x: 0.15, y: 0.15, r: 0.015, c: 'rgba(245, 158, 11, 0.4)' },
+            { x: 0.85, y: 0.2, r: 0.012, c: 'rgba(139, 92, 246, 0.5)' },
+            { x: 0.1, y: 0.75, r: 0.01, c: 'rgba(239, 68, 68, 0.4)' },
+            { x: 0.88, y: 0.8, r: 0.018, c: 'rgba(245, 158, 11, 0.3)' },
+            { x: 0.2, y: 0.5, r: 0.008, c: 'rgba(255, 255, 255, 0.2)' },
+            { x: 0.82, y: 0.5, r: 0.008, c: 'rgba(255, 255, 255, 0.15)' }
+        ];
+        dots.forEach(function(d) {
+            ctx.fillStyle = d.c;
+            ctx.beginPath();
+            ctx.arc(s * d.x, s * d.y, s * d.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Subtle border
+        ctx.strokeStyle = 'rgba(139, 92, 246, 0.15)';
+        ctx.lineWidth = s * 0.005;
+        ctx.strokeRect(s * 0.01, s * 0.01, s * 0.98, s * 0.98);
+
+        return canvas;
+    }
+
+    SIZES.forEach(function(size) {
+        var canvas = drawIcon(size);
+
+        // Scale for display
+        var displaySize = Math.min(size, 192);
+        canvas.style.width = displaySize + 'px';
+        canvas.style.height = displaySize + 'px';
+
+        var box = document.createElement('div');
+        box.className = 'icon-box';
+        box.appendChild(canvas);
+
+        var label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = size + ' x ' + size + ' px';
+        box.appendChild(label);
+
+        // Download link
+        var link = document.createElement('a');
+        link.textContent = 'Descarregar icon-' + size + '.png';
+        link.download = 'icon-' + size + '.png';
+        link.href = canvas.toDataURL('image/png');
+        box.appendChild(link);
+
+        container.appendChild(box);
+    });
+    </script>
+</body>
+</html>

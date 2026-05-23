@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Sync</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,sans-serif;background:#0a0a1a;color:#fff;padding:20px}
+        h1{font-size:20px;margin-bottom:16px;color:#a78bfa}
+        .row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+        input{padding:10px;background:#1a1a2e;border:1px solid #333;border-radius:8px;color:#fff;font-size:16px;flex:1}
+        button{padding:10px 16px;background:#8b5cf6;border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+        #log{background:#111;border-radius:8px;padding:12px;font-family:monospace;font-size:12px;line-height:1.6;max-height:60vh;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+        .ok{color:#22c55e}.err{color:#ef4444}.warn{color:#f59e0b}.info{color:#60a5fa}
+    </style>
+</head>
+<body>
+    <h1>Debug Sincronização</h1>
+    <div class="row">
+        <input type="text" id="code" placeholder="Código da sala (ex: ABCD)" maxlength="4" style="text-transform:uppercase">
+        <button onclick="startTest()">Testar</button>
+        <button onclick="stopTest()" style="background:#ef4444">Parar</button>
+    </div>
+    <div id="log"></div>
+    <script>
+    const log = document.getElementById('log');
+    let timer = null;
+    let count = 0;
+
+    function addLog(msg, cls) {
+        const t = new Date().toLocaleTimeString();
+        log.innerHTML += '<span class="' + (cls||'') + '">[' + t + '] ' + msg + '</span>\n';
+        log.scrollTop = log.scrollHeight;
+    }
+
+    async function testPoll(code) {
+        count++;
+        const n = count;
+        const start = Date.now();
+        try {
+            addLog('#' + n + ' A enviar pedido...', 'info');
+            const r = await fetch('api.php?_t=' + Date.now(), {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'get_state',
+                    player_id: 'debug-' + Date.now(),
+                    room_code: code.toUpperCase()
+                }),
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+            const ms = Date.now() - start;
+            const text = await r.text();
+
+            if (r.ok) {
+                try {
+                    const j = JSON.parse(text);
+                    if (j.ok) {
+                        const s = j.state;
+                        addLog('#' + n + ' OK (' + ms + 'ms) fase=' + s.phase + ' jogadores=' + s.players.length + ' ronda=' + s.round, 'ok');
+                    } else {
+                        addLog('#' + n + ' ERRO API (' + ms + 'ms): ' + j.error, 'err');
+                    }
+                } catch(e) {
+                    addLog('#' + n + ' JSON INVÁLIDO (' + ms + 'ms): ' + text.substring(0, 200), 'err');
+                }
+            } else {
+                addLog('#' + n + ' HTTP ' + r.status + ' (' + ms + 'ms): ' + text.substring(0, 200), 'err');
+            }
+        } catch(e) {
+            addLog('#' + n + ' FALHA REDE: ' + e.message, 'err');
+        }
+    }
+
+    function startTest() {
+        const code = document.getElementById('code').value.trim();
+        if (code.length !== 4) { addLog('Código deve ter 4 letras!', 'err'); return; }
+        stopTest();
+        count = 0;
+        log.innerHTML = '';
+        addLog('A testar sala ' + code.toUpperCase() + ' a cada 1s...', 'warn');
+        addLog('Player ID: ' + (localStorage.getItem('jogos_pid') || 'nenhum'), 'info');
+        addLog('Service Worker: ' + ('serviceWorker' in navigator ? 'suportado' : 'NÃO suportado'), 'info');
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+                addLog('SW registados: ' + regs.length, 'info');
+                regs.forEach(function(r, i) {
+                    addLog('  SW' + i + ': scope=' + r.scope + ' active=' + (r.active ? 'sim' : 'não'), 'info');
+                });
+            });
+        }
+
+        testPoll(code);
+        timer = setInterval(function() { testPoll(code); }, 1000);
+    }
+
+    function stopTest() {
+        if (timer) { clearInterval(timer); timer = null; }
+        addLog('Parado.', 'warn');
+    }
+    </script>
+</body>
+</html>

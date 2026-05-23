@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jogos">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Jogos de Festa">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.php?s=192">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon.php?s=192">
+    <link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <title>Jogos de Festa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--bg:#0a0a1a;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.08);--text:#fff;--dim:#8888aa;--purple:#8b5cf6;--red:#ef4444;--gold:#f59e0b}
+        html{height:100%}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;min-height:-webkit-fill-available;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+        .bg-glow{position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(139,92,246,0.15) 0%,transparent 50%),radial-gradient(circle at 70% 60%,rgba(239,68,68,0.1) 0%,transparent 50%);animation:bgFloat 20s ease-in-out infinite;z-index:0;pointer-events:none}
+        @keyframes bgFloat{0%,100%{transform:translate(0,0)}33%{transform:translate(30px,-30px)}66%{transform:translate(-20px,20px)}}
+
+        .container{position:relative;z-index:1;max-width:420px;margin:0 auto;padding:48px 20px 40px;min-height:100dvh;display:flex;flex-direction:column}
+
+        .header{text-align:center;margin-bottom:40px}
+        .header .icon{font-size:64px;display:block;margin-bottom:16px;animation:bounce 2s ease-in-out infinite}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        .header h1{font-size:32px;font-weight:900;letter-spacing:-0.5px;background:linear-gradient(135deg,#f9d423,#ff4e50,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% 200%;animation:gs 4s ease infinite}
+        @keyframes gs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        .header p{color:var(--dim);font-size:15px;margin-top:8px}
+
+        .games{display:flex;flex-direction:column;gap:16px;flex:1}
+        .game-card{display:block;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;text-decoration:none;color:var(--text);transition:transform 0.15s,background 0.15s;position:relative;overflow:hidden;cursor:pointer}
+        .game-card:active{transform:scale(0.97);background:rgba(255,255,255,0.1)}
+        .game-card .glow{position:absolute;top:-1px;left:-1px;right:-1px;height:3px;border-radius:20px 20px 0 0}
+        .cj .glow{background:linear-gradient(90deg,#667eea,#764ba2,#8b5cf6)}.ci .glow{background:linear-gradient(90deg,#ef4444,#f97316,#ef4444)}
+        .game-card .ct{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+        .game-card .ci2{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+        .cj .ci2{background:rgba(139,92,246,0.2)}.ci .ci2{background:rgba(239,68,68,0.2)}
+        .game-card h2{font-size:22px;font-weight:800}
+        .game-card .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+        .cj .badge{background:rgba(139,92,246,0.2);color:#a78bfa}.ci .badge{background:rgba(239,68,68,0.2);color:#fca5a5}
+        .game-card p{color:var(--dim);font-size:14px;line-height:1.5}
+        .game-card .arrow{position:absolute;right:20px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.2);font-size:20px}
+
+        .footer{margin-top:auto;padding-top:24px;text-align:center}
+        .footer .ver{margin-top:16px;font-size:12px;color:rgba(255,255,255,0.15)}
+
+        /* ===== INSTALL BANNER ===== */
+        .install-banner{
+            position:fixed;bottom:0;left:0;right:0;z-index:9999;
+            background:linear-gradient(135deg,#667eea,#8b5cf6);
+            padding:1rem;
+            padding-bottom:calc(1rem + env(safe-area-inset-bottom));
+            transform:translateY(100%);
+            transition:transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .install-banner.show{
+            transform:translateY(0);
+        }
+        .install-content{
+            display:flex;align-items:center;gap:0.75rem;
+            max-width:500px;margin:0 auto;
+        }
+        .install-icon{
+            font-size:1.5rem;color:white;
+            background:rgba(255,255,255,0.2);
+            width:45px;height:45px;border-radius:10px;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        }
+        .install-text{flex:1;color:white}
+        .install-text strong{display:block;font-size:1rem;margin-bottom:2px}
+        .install-text span{font-size:0.8rem;opacity:0.9}
+        .install-btn{
+            background:white;color:#8b5cf6;border:none;
+            padding:0.6rem 1.2rem;border-radius:8px;
+            font-weight:600;font-size:0.9rem;cursor:pointer;flex-shrink:0;
+            font-family:inherit;
+        }
+        .install-btn:active{opacity:0.9}
+        .install-close{
+            background:transparent;border:none;color:white;
+            opacity:0.7;font-size:1.2rem;padding:0.5rem;cursor:pointer;flex-shrink:0;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="container">
+        <div class="header">
+            <span class="icon">🎮</span>
+            <h1>Jogos de Festa</h1>
+            <p>Escolhe um jogo e diverte-te!</p>
+        </div>
+        <div class="games">
+            <div class="game-card cj" onclick="navigateTo('justone.html')">
+                <div class="glow"></div>
+                <div class="ct"><div class="ci2">💡</div><div><h2>Just One</h2><span class="badge">3-15 jogadores</span></div></div>
+                <p>Dá pistas de uma só palavra para ajudar o adivinhador a descobrir a palavra secreta. Cuidado com as pistas repetidas!</p>
+                <span class="arrow">›</span>
+            </div>
+            <div class="game-card ci" onclick="navigateTo('impostor.html')">
+                <div class="glow"></div>
+                <div class="ct"><div class="ci2">🕵️</div><div><h2>Impostor</h2><span class="badge">3-15 jogadores</span></div></div>
+                <p>Todos recebem uma palavra secreta... menos o impostor! Descobre quem está a fingir antes que seja tarde demais.</p>
+                <span class="arrow">›</span>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="ver">Jogos de Festa v2.0</div>
+        </div>
+    </div>
+
+    <script>
+    // ===== VERIFICAR CONVITE PENDENTE =====
+    // Quando a app abre, verificar se há convite do WhatsApp guardado
+    (function() {
+        try {
+            var pending = localStorage.getItem('jogos_pending_invite');
+            if (pending) {
+                var invite = JSON.parse(pending);
+                // Só aceitar convites dos últimos 5 minutos
+                if (invite.sala && invite.time && (Date.now() - invite.time) < 300000) {
+                    localStorage.removeItem('jogos_pending_invite');
+                    var gameFile = invite.game === 'impostor' ? 'impostor.html' : 'justone.html';
+                    window.location.href = gameFile + '?sala=' + invite.sala;
+                    return;
+                }
+                localStorage.removeItem('jogos_pending_invite');
+            }
+        } catch(e) {}
+    })();
+
+    // ===== NAVEGAÇÃO (fica dentro do standalone mode) =====
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+
+    // ===== SERVICE WORKER =====
+    if ('serviceWorker' in navigator) {
+        // Forçar verificação de atualização
+        navigator.serviceWorker.register('./sw.js').then(function(reg) {
+            reg.update();
+            reg.addEventListener('updatefound', function() {
+                var newWorker = reg.installing;
+                newWorker.addEventListener('statechange', function() {
+                    if (newWorker.state === 'activated') {
+                        window.location.reload();
+                    }
+                });
+            });
+        }).catch(function() {});
+        // Recarregar quando o SW avisa que atualizou
+        navigator.serviceWorker.addEventListener('message', function(e) {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                window.location.reload();
+            }
+        });
+    }
+
+    // ===== PWA INSTALL =====
+    var deferredPrompt = null;
+    var installPromptShown = false;
+
+    function isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
+    function isAndroid() {
+        return /Android/.test(navigator.userAgent);
+    }
+    function isInStandaloneMode() {
+        return (window.matchMedia('(display-mode: standalone)').matches) ||
+               (window.navigator.standalone === true);
+    }
+
+    // Android - captura o evento beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallBanner('android');
+    });
+
+    // Mostrar banner
+    function showInstallBanner(platform) {
+        if (isInStandaloneMode()) return;
+        if (installPromptShown) return;
+        if (document.getElementById('install-banner')) return;
+
+        installPromptShown = true;
+
+        var banner = document.createElement('div');
+        banner.id = 'install-banner';
+        banner.className = 'install-banner';
+
+        if (platform === 'ios') {
+            banner.innerHTML =
+                '<div class="install-content">' +
+                    '<div class="install-icon">🎮</div>' +
+                    '<div class="install-text">' +
+                        '<strong>Instalar Jogos de Festa</strong>' +
+                        '<span>Toca em <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTQgMTJoMTZNMTIgNHY4TTggOGw0LTQgNCA0Ii8+PHBhdGggZD0iTTQgMTh2MmgxNnYtMiIvPjwvc3ZnPg==" alt="partilhar" style="vertical-align:middle;width:18px;height:18px"> Partilhar e depois "Ecrã principal"</span>' +
+                    '</div>' +
+                    '<button class="install-close" onclick="dismissInstallBanner()">✕</button>' +
+                '</div>';
+        } else if (platform === 'android' && deferredPrompt) {
+            banner.innerHTML =
+                '<div class="install-content">' +
+                    '<div class="install-icon">🎮</div>' +
+                    '<div class="install-text">' +
+                        '<strong>Instalar Jogos de Festa</strong>' +
+                        '<span>Adiciona ao ecrã inicial</span>' +
+                    '</div>' +
+                    '<button class="install-btn" onclick="installPWA()">Instalar</button>' +
+                    '<button class="install-close" onclick="dismissInstallBanner()">✕</button>' +
+                '</div>';
+        } else if (platform === 'android') {
+            banner.innerHTML =
+                '<div class="install-content">' +
+                    '<div class="install-icon">🎮</div>' +
+                    '<div class="install-text">' +
+                        '<strong>Instalar Jogos de Festa</strong>' +
+                        '<span>Menu ⋮ &gt; "Adicionar ao ecrã inicial"</span>' +
+                    '</div>' +
+                    '<button class="install-close" onclick="dismissInstallBanner()">✕</button>' +
+                '</div>';
+        }
+
+        document.body.appendChild(banner);
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                banner.classList.add('show');
+            });
+        });
+    }
+
+    // Instalar PWA (Android)
+    function installPWA() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function() {
+            deferredPrompt = null;
+            dismissInstallBanner();
+        });
+    }
+
+    // Fechar banner
+    function dismissInstallBanner() {
+        var banner = document.getElementById('install-banner');
+        if (banner) {
+            banner.classList.remove('show');
+            setTimeout(function() { banner.remove(); }, 400);
+        }
+    }
+
+    // Verificar plataforma
+    setTimeout(function() {
+        if (isInStandaloneMode()) return;
+
+        if (isIOS()) {
+            showInstallBanner('ios');
+        } else if (isAndroid() && !deferredPrompt) {
+            showInstallBanner('android');
+        }
+    }, 2000);
+
+    // Se já está instalado
+    window.addEventListener('appinstalled', function() {
+        dismissInstallBanner();
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f0c29">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <title>Jogos de Festa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: rgba(255,255,255,0.06);
+            --border: rgba(255,255,255,0.08);
+            --text: #ffffff;
+            --text-dim: #8888aa;
+            --purple: #8b5cf6;
+            --red: #ef4444;
+            --gold: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        /* Animated gradient background */
+        .bg-glow {
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(139,92,246,0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(239,68,68,0.1) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(30px, -30px); }
+            66% { transform: translate(-20px, 20px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 60px 20px 40px;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header .icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 16px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #f9d423, #ff4e50, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: gradientShift 4s ease infinite;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            color: var(--text-dim);
+            font-size: 15px;
+            margin-top: 8px;
+        }
+
+        .games {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .game-card {
+            display: block;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            text-decoration: none;
+            color: var(--text);
+            transition: transform 0.15s, background 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-card:active {
+            transform: scale(0.97);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .game-card .glow {
+            position: absolute;
+            top: -1px; left: -1px; right: -1px;
+            height: 3px;
+            border-radius: 20px 20px 0 0;
+        }
+        .card-justone .glow { background: linear-gradient(90deg, #667eea, #764ba2, #8b5cf6); }
+        .card-impostor .glow { background: linear-gradient(90deg, #ef4444, #f97316, #ef4444); }
+
+        .game-card .card-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .game-card .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+        .card-justone .card-icon { background: rgba(139,92,246,0.2); }
+        .card-impostor .card-icon { background: rgba(239,68,68,0.2); }
+
+        .game-card h2 {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .game-card .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .card-justone .badge { background: rgba(139,92,246,0.2); color: #a78bfa; }
+        .card-impostor .badge { background: rgba(239,68,68,0.2); color: #fca5a5; }
+
+        .game-card p {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .game-card .arrow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.2);
+            font-size: 20px;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding-top: 40px;
+            text-align: center;
+        }
+
+        .footer .install-hint {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+        .footer .install-hint strong { color: var(--text); }
+
+        .footer .version {
+            margin-top: 16px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="container">
+        <div class="header">
+            <span class="icon">🎮</span>
+            <h1>Jogos de Festa</h1>
+            <p>Escolhe um jogo e diverte-te!</p>
+        </div>
+
+        <div class="games">
+            <a href="/justone.html" class="game-card card-justone">
+                <div class="glow"></div>
+                <div class="card-top">
+                    <div class="card-icon">💡</div>
+                    <div>
+                        <h2>Just One</h2>
+                        <span class="badge">3–7 jogadores</span>
+                    </div>
+                </div>
+                <p>Dá pistas de uma só palavra para ajudar o adivinhador a descobrir a palavra secreta. Cuidado com as pistas repetidas — são eliminadas!</p>
+                <span class="arrow">›</span>
+            </a>
+
+            <a href="/impostor.html" class="game-card card-impostor">
+                <div class="glow"></div>
+                <div class="card-top">
+                    <div class="card-icon">🕵️</div>
+                    <div>
+                        <h2>Impostor</h2>
+                        <span class="badge">3–10 jogadores</span>
+                    </div>
+                </div>
+                <p>Todos recebem uma palavra secreta... menos o impostor! Descobre quem está a fingir antes que seja tarde demais.</p>
+                <span class="arrow">›</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <div class="install-hint">
+                📱 <strong>Instalar como app:</strong><br>
+                Safari → Partilhar → <em>Adicionar ao ecrã inicial</em><br>
+                Chrome → Menu → <em>Adicionar ao ecrã inicial</em>
+            </div>
+            <div class="version">Jogos de Festa v1.0</div>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+</body>
+</html>
