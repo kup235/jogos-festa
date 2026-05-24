@@ -606,9 +606,13 @@
             (state.allClues||[]).map(c=>`<div class="clue-card ${c.removed?'removed':''}"><span class="clue-text">${esc(c.clue)}</span><span class="clue-author">${esc(c.playerName)}</span>${c.removed?'<span class="removed-badge">Duplicada</span>':''}</div>`).join('');
         renderScores('resScores');
         const resAction = $('resAction');
-        resAction.innerHTML = state.isHost
-            ? `<button class="btn btn-primary" style="width:100%;padding:18px;font-size:18px;animation:pulse 1.5s infinite" onclick="doAction('next_round')">Próxima Ronda →</button>`
-            : '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+        if (state.guessCorrect) {
+            resAction.innerHTML = '<div class="waiting">Próxima ronda em breve<span class="dots"></span></div>';
+        } else {
+            resAction.innerHTML = state.isHost
+                ? `<button class="btn btn-primary" style="width:100%;padding:18px;font-size:18px;animation:pulse 1.5s infinite" onclick="doAction('next_round')">Próxima Ronda →</button>`
+                : '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+        }
         resAction.style.display = 'block';
     }
 
