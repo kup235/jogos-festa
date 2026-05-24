@@ -506,6 +506,7 @@
             $('wrAction').innerHTML = `<div class="input-group mt-16"><label>A tua pista (uma só palavra)</label><input type="text" id="clueInput" placeholder="Escreve uma palavra..." maxlength="30" autocomplete="off" onkeydown="if(event.key==='Enter')submitClue()"></div><button class="btn btn-primary" onclick="submitClue()">Enviar Pista</button>`;
             setTimeout(()=>{const el=$('clueInput');if(el)el.focus();},100);
         }
+        showScreen('screenWriting');
     }
 
     function normalizePT(s) {
