@@ -558,10 +558,10 @@
                 ? `<button class="btn btn-primary" onclick="doAction('justone_confirm_review')">Mostrar Pistas ao Adivinhador</button>`
                 : '<div class="waiting">A aguardar revisão<span class="dots"></span></div>';
         }
+        showScreen('screenReview');
     }
 
     function renderGuessing() {
-        showScreen('screenGuessing');
         $('gsRound').textContent=state.round; $('gsMax').textContent=state.maxRounds;
         updateTimer('gsTimer', state.timerEnd, 90000);
         if (state.isGuesser) {
