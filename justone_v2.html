@@ -492,7 +492,6 @@
     }
 
     function renderWriting() {
-        showScreen('screenWriting');
         $('wrRound').textContent=state.round; $('wrMax').textContent=state.maxRounds;
         updateTimer('wrTimer', state.timerEnd, 60000);
         const guesser = state.players[state.guesserIndex];
