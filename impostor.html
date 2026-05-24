@@ -451,6 +451,14 @@
     $('inputCode').addEventListener('input', updateJoinBtn);
     updateJoinBtn();
 
+    // Quando o telemóvel volta do background, poll imediatamente
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && roomCode) { lastStateJSON = ''; poll(); }
+    });
+    window.addEventListener('focus', function() {
+        if (roomCode) { lastStateJSON = ''; poll(); }
+    });
+
     // Reconectar automaticamente se tiver sala guardada
     const savedRoom = localStorage.getItem('jogos_room_impostor');
     if (savedRoom && !params.get('sala')) {
