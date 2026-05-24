@@ -393,8 +393,8 @@
     }
 
     async function doAction(action, data = {}) {
-        await api(action, data);
-        poll();
+        const r = await api(action, data);
+        if (r.ok) await poll();
     }
 
     // ==================== RENDER ====================
