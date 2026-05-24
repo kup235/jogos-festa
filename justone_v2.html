@@ -699,6 +699,21 @@
     function updateTimer(elId,end,total){if(timerInt)clearInterval(timerInt);const el=$(elId);if(!end){el.style.width='100%';return;}function t(){const r=Math.max(0,end-Date.now());el.style.width=(r/total*100)+'%';if(r<=0)clearInterval(timerInt);}t();timerInt=setInterval(t,500);}
     function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
+    // Quando o telemóvel volta do background, poll imediatamente
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && roomCode) {
+            lastStateJSON = ''; // forçar re-render
+            poll();
+        }
+    });
+    // Fallback para iOS que nem sempre dispara visibilitychange
+    window.addEventListener('focus', function() {
+        if (roomCode) {
+            lastStateJSON = '';
+            poll();
+        }
+    });
+
     // Mostrar versão
     if ($('versionTag')) $('versionTag').textContent = APP_VERSION;
 
