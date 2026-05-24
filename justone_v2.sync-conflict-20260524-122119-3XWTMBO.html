@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="pt" style="background:#0a0a1a">
+<head>
+    <style>html,body{background:#0a0a1a}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jogos">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.php?s=192">
+    <title>Just One</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--bg:#0a0a1a;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.08);--text:#fff;--dim:#8888aa;--accent:#8b5cf6;--accent2:#a78bfa;--green:#22c55e;--red:#ef4444;--gold:#f59e0b}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
+        .bg-glow{position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 40% 30%,rgba(139,92,246,0.12) 0%,transparent 50%),radial-gradient(circle at 60% 70%,rgba(99,102,241,0.08) 0%,transparent 50%);animation:bgFloat 20s ease-in-out infinite;z-index:0;pointer-events:none}
+        @keyframes bgFloat{0%,100%{transform:translate(0,0)}33%{transform:translate(20px,-20px)}66%{transform:translate(-15px,15px)}}
+        .app{position:relative;z-index:1;max-width:420px;margin:0 auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top, 0px));min-height:100dvh;display:flex;flex-direction:column}
+        .top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:8px}
+        .top-bar .back{background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:18px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+        .top-bar h1{font-size:18px;font-weight:800;background:linear-gradient(135deg,#667eea,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .room-code{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:6px 12px;font-size:14px;font-weight:700;letter-spacing:2px;color:var(--accent2)}
+        .screen{display:none;flex-direction:column;flex:1}.screen.active{display:flex}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:12px}
+        .btn{display:block;width:100%;padding:16px;border:none;border-radius:16px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:transform 0.1s,opacity 0.1s;text-align:center;text-decoration:none;color:#fff}
+        .btn:active{transform:scale(0.97)}.btn:disabled{opacity:0.4;cursor:default;transform:none}
+        .btn-primary{background:linear-gradient(135deg,#667eea,#8b5cf6)}
+        .btn-green{background:linear-gradient(135deg,#059669,#22c55e)}
+        .btn-ghost{background:var(--card);border:1px solid var(--border);color:var(--dim)}
+        .input-group{margin-bottom:16px}
+        .input-group label{display:block;font-size:13px;font-weight:600;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+        .input-group input{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:inherit;font-size:16px;outline:none;transition:border-color 0.2s}
+        .input-group input:focus{border-color:var(--accent)}.input-group input::placeholder{color:rgba(255,255,255,0.2)}
+        .players-list{list-style:none;padding:0}
+        .players-list li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:15px}
+        .players-list li:last-child{border-bottom:none}
+        .players-list .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+        .players-list .name{flex:1}.players-list .host-badge{font-size:11px;background:rgba(245,158,11,0.2);color:var(--gold);padding:2px 8px;border-radius:8px;font-weight:600}
+        .timer-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:4px;margin-bottom:16px;overflow:hidden}
+        .timer-bar .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--red));border-radius:4px;transition:width 0.5s linear}
+        .big-word{text-align:center;padding:24px 16px}
+        .big-word .label{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px}
+        .big-word .word{font-size:42px;font-weight:900;background:linear-gradient(135deg,#f9d423,#ff4e50);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:wordPulse 2s ease-in-out infinite}
+        @keyframes wordPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+        .clue-card{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:14px;margin-bottom:8px}
+        .clue-card .clue-text{flex:1;font-size:18px;font-weight:700}
+        .clue-card .clue-author{font-size:12px;color:var(--dim)}
+        .clue-card.removed{opacity:0.3;text-decoration:line-through}
+        .clue-card .removed-badge{font-size:11px;background:rgba(239,68,68,0.2);color:var(--red);padding:2px 8px;border-radius:8px}
+        .result-display{text-align:center;padding:24px 0}
+        .result-display .emoji{font-size:64px;margin-bottom:12px;animation:rb 0.5s ease}
+        @keyframes rb{0%{transform:scale(0)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+        .result-display .msg{font-size:24px;font-weight:800}
+        .result-display .msg.correct{color:var(--green)}.result-display .msg.wrong{color:var(--red)}
+        .round-info{text-align:center;font-size:13px;color:var(--dim);margin-bottom:16px}
+        .round-info strong{color:var(--accent2)}
+        .waiting{text-align:center;padding:24px;color:var(--dim)}
+        .waiting .dots::after{content:'';animation:dots 1.5s steps(3) infinite}
+        @keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
+        .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#ef4444;color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);white-space:nowrap}
+        .toast.show{transform:translateX(-50%) translateY(0)}
+        .score-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+        .score-row:last-child{border-bottom:none}
+        .score-row .rank{font-size:18px;width:28px;text-align:center}
+        .score-row .sname{flex:1;font-weight:600}
+        .score-row .spoints{font-size:18px;font-weight:800;color:var(--gold)}
+        .scoreboard-title{font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+        .spacer{flex:1}.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mb-16{margin-bottom:16px}.text-center{text-align:center}.text-dim{color:var(--dim);font-size:14px}
+        .status{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600}
+        .status.submitted{background:rgba(34,197,94,0.2);color:var(--green)}
+        .game-menu-btn{background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:18px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+        .game-menu{display:none;position:absolute;top:48px;right:0;background:#1a1a2e;border:1px solid var(--border);border-radius:16px;padding:8px;min-width:220px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+        .game-menu.open{display:block}
+        .game-menu .gm-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);transition:background 0.15s}
+        .game-menu .gm-item:hover{background:rgba(255,255,255,0.06)}
+        .game-menu .gm-item .gm-icon{font-size:18px;width:24px;text-align:center}
+        .game-menu .gm-sep{height:1px;background:var(--border);margin:4px 8px}
+        .game-menu .gm-diff{display:flex;gap:6px;padding:8px 14px}
+        .game-menu .gm-diff button{flex:1;padding:8px 4px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--dim);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s}
+        .game-menu .gm-diff button.gm-active-easy{background:rgba(34,197,94,0.2);color:var(--green);border-color:var(--green)}
+        .game-menu .gm-diff button.gm-active-medium{background:rgba(245,158,11,0.2);color:var(--gold);border-color:var(--gold)}
+        .game-menu .gm-diff button.gm-active-hard{background:rgba(239,68,68,0.2);color:var(--red);border-color:var(--red)}
+        .update-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:200;background:linear-gradient(135deg,#667eea,#8b5cf6);padding:12px 20px;text-align:center;font-size:14px;font-weight:700;color:#fff;cursor:pointer;animation:bannerPulse 2s ease-in-out infinite}
+        @keyframes bannerPulse{0%,100%{opacity:1}50%{opacity:0.85}}
+        .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:50}
+        .overlay.open{display:block}
+        .gm-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;border-radius:12px;transition:background 0.15s}
+        .gm-toggle:hover{background:rgba(255,255,255,0.06)}
+        .gm-toggle-label{font-size:13px;font-weight:600;color:var(--text);flex:1}
+        .gm-toggle-desc{font-size:11px;color:var(--dim);margin-top:2px}
+        .toggle-switch{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,0.15);position:relative;transition:background 0.2s;flex-shrink:0;margin-left:10px}
+        .toggle-switch.on{background:var(--accent)}
+        .toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:10px;background:#fff;transition:transform 0.2s}
+        .toggle-switch.on::after{transform:translateX(20px)}
+        .diff-card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px}
+        .diff-label{font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px}
+        .diff-btns{display:flex;gap:8px}
+        .diff-btn{flex:1;padding:10px 0;border-radius:10px;border:2px solid #333;background:transparent;color:var(--dim);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s}
+        .diff-btn.active-easy{border-color:#22c55e;background:rgba(34,197,94,0.15);color:#22c55e}
+        .diff-btn.active-medium{border-color:#f59e0b;background:rgba(245,158,11,0.15);color:#f59e0b}
+        .diff-btn.active-hard{border-color:#ef4444;background:rgba(239,68,68,0.15);color:#ef4444}
+    </style>
+</head>
+<body>
+    <div class="update-banner" id="updateBanner" onclick="forceUpdate()">Nova versão disponível! Toca para atualizar</div>
+    <div class="bg-glow"></div>
+    <div class="app">
+        <div class="top-bar" id="topBar" style="display:none">
+            <span class="back" onclick="leaveRoom()" title="Sair da sala">‹</span>
+            <h1>💡 Just One</h1>
+            <div style="display:flex;align-items:center;gap:8px">
+                <div class="room-code" id="roomCodeDisplay">----</div>
+                <div class="game-menu-btn" id="menuBtn" onclick="toggleGameMenu()" style="display:none">⚙</div>
+                <div class="game-menu" id="gameMenu">
+                    <div class="gm-item" onclick="restartGame()"><span class="gm-icon">🔄</span>Novo Jogo</div>
+                    <div class="gm-sep"></div>
+                    <div class="gm-toggle" onclick="toggleDuplicates()">
+                        <div><div class="gm-toggle-label">Remover duplicadas</div><div class="gm-toggle-desc">Pistas iguais são eliminadas</div></div>
+                        <div class="toggle-switch" id="toggleDup"></div>
+                    </div>
+                    <div class="gm-sep"></div>
+                    <div style="padding:8px 14px 4px;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase">Rondas</div>
+                    <div class="gm-diff" id="menuRounds"></div>
+                    <div class="gm-sep"></div>
+                    <div style="padding:8px 14px 4px;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase">Dificuldade</div>
+                    <div class="gm-diff" id="menuDiff"></div>
+                </div>
+            </div>
+        </div>
+        <div class="overlay" id="menuOverlay" onclick="closeGameMenu()"></div>
+
+        <!-- MENU -->
+        <div class="screen active" id="screenMenu">
+            <div style="text-align:center;padding:40px 0 24px;">
+                <div style="font-size:72px;margin-bottom:16px;">💡</div>
+                <h1 style="font-size:36px;font-weight:900;background:linear-gradient(135deg,#667eea,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Just One</h1>
+                <p style="color:var(--dim);margin-top:8px;font-size:15px;">O jogo das pistas únicas</p>
+                <p id="versionTag" style="color:var(--dim);margin-top:4px;font-size:11px;opacity:0.5;"></p>
+            </div>
+            <div class="card">
+                <div class="input-group"><label>O teu nome</label><input type="text" id="inputName" placeholder="Escreve o teu nome..." maxlength="15" autocomplete="off"></div>
+                <button class="btn btn-primary mb-16" onclick="createRoom()">Criar Sala</button>
+                <div style="text-align:center;color:var(--dim);font-size:13px;margin-bottom:16px;">— ou —</div>
+                <div class="input-group"><label>Código da sala</label><input type="text" id="inputCode" placeholder="ABCD" maxlength="4" style="text-transform:uppercase;text-align:center;font-size:24px;letter-spacing:8px;font-weight:800;" autocomplete="off"></div>
+                <button class="btn btn-ghost" id="btnJoin" onclick="joinRoom()">Entrar na Sala</button>
+            </div>
+            <div style="margin-top:auto;padding-top:24px;"><span class="btn btn-ghost" style="display:block;cursor:pointer" onclick="localStorage.removeItem('jogos_room_justone');window.location.href='index.html'">← Voltar aos Jogos</span></div>
+        </div>
+
+        <!-- LOBBY -->
+        <div class="screen" id="screenLobby">
+            <div class="card"><div style="text-align:center;margin-bottom:16px;"><div style="font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Código da Sala</div><div style="font-size:36px;font-weight:900;letter-spacing:6px;color:var(--accent2);" id="lobbyCode">----</div><div style="font-size:12px;color:var(--dim);margin-top:4px;">Partilha este código com os teus amigos</div></div><button class="btn btn-green" onclick="shareInvite()" style="margin-top:8px">📲 Convidar por WhatsApp</button></div>
+            <div id="lobbyDifficulty"></div>
+            <div class="card"><div style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px;">Jogadores <span id="lobbyCount">(0)</span></div><ul class="players-list" id="lobbyPlayers"></ul></div>
+            <div class="spacer"></div><div id="lobbyStartBtn"></div>
+        </div>
+
+        <!-- SHOW WORD -->
+        <div class="screen" id="screenShowWord"><div class="round-info">Ronda <strong id="swRound">1</strong> de <strong id="swMax">5</strong></div><div class="card" id="swContent"></div><div id="swAction"></div></div>
+
+        <!-- WRITING -->
+        <div class="screen" id="screenWriting"><div class="round-info">Ronda <strong id="wrRound">1</strong> de <strong id="wrMax">5</strong></div><div class="timer-bar"><div class="fill" id="wrTimer"></div></div><div class="card" id="wrContent"></div><div id="wrAction"></div></div>
+
+        <!-- REVIEW -->
+        <div class="screen" id="screenReview"><div class="round-info">Ronda <strong id="rvRound">1</strong> de <strong id="rvMax">5</strong></div><div class="card"><div class="big-word"><div class="label">Palavra</div><div class="word" id="rvWord">---</div></div></div><div class="card"><div style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:12px;">Pistas recebidas</div><div id="rvClues"></div></div><div id="rvAction" class="mt-16"></div></div>
+
+        <!-- GUESSING -->
+        <div class="screen" id="screenGuessing"><div class="round-info">Ronda <strong id="gsRound">1</strong> de <strong id="gsMax">5</strong></div><div class="timer-bar"><div class="fill" id="gsTimer"></div></div><div class="card" id="gsContent"></div><div id="gsAction"></div></div>
+
+        <!-- RESULT -->
+        <div class="screen" id="screenResult"><div class="card"><div class="result-display" id="resDisplay"></div><div class="big-word"><div class="label">A palavra era</div><div class="word" id="resWord">---</div></div><div id="resClues" class="mt-16"></div></div><div class="card"><div class="scoreboard-title">Pontuação</div><div id="resScores"></div></div><div style="height:80px"></div></div>
+        <div id="resAction" style="position:fixed;bottom:0;left:0;right:0;padding:16px 20px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,rgba(10,10,26,1) 60%,rgba(10,10,26,0));z-index:50;display:none;"></div>
+
+        <!-- GAME OVER -->
+        <div class="screen" id="screenGameover"><div style="text-align:center;padding:24px 0;"><div style="font-size:64px;margin-bottom:12px;">🏆</div><h2 style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#f9d423,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Fim do Jogo!</h2></div><div class="card"><div class="scoreboard-title">Classificação Final</div><div id="goScores"></div></div><div id="goAction" class="mt-16"></div></div>
+
+        <!-- SPECTATOR (entrou a meio do jogo) -->
+        <div class="screen" id="screenSpectator"><div style="text-align:center;padding:40px 0;"><div style="font-size:64px;margin-bottom:16px;">👀</div><h2 style="font-size:22px;font-weight:800;margin-bottom:8px;">Jogo em curso</h2><p class="text-dim">Entraste na sala! Vais jogar na próxima ronda.</p></div><div class="card"><div style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px;">Jogadores</div><ul class="players-list" id="specPlayers"></ul></div><div class="waiting" style="margin-top:24px">A aguardar o fim do jogo<span class="dots"></span></div></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ==================== CONFIG ====================
+    const APP_VERSION = 'v3.0';
+    const API = 'api.php';
+
+    async function forceUpdate() {
+        $('updateBanner').textContent = 'A atualizar...';
+        try {
+            // Limpar todas as caches
+            if ('caches' in window) {
+                const names = await caches.keys();
+                await Promise.all(names.map(n => caches.delete(n)));
+            }
+            // Comunicar com SW para forçar update
+            if ('serviceWorker' in navigator) {
+                const reg = await navigator.serviceWorker.getRegistration();
+                if (reg) {
+                    if (reg.waiting) reg.waiting.postMessage({ type: 'FORCE_UPDATE' });
+                    await reg.update();
+                }
+            }
+        } catch(e) {}
+        // Reload com cache-bust (funciona em iOS e Android)
+        window.location.href = window.location.pathname + '?v=' + Date.now();
+    }
+    let state = null;
+    let roomCode = null;
+    let pollTimer = null;
+    let myId = localStorage.getItem('jogos_pid');
+    if (!myId) { myId = crypto.randomUUID(); localStorage.setItem('jogos_pid', myId); }
+
+    // ==================== API ====================
+    async function api(action, data = {}) {
+        data.action = action;
+        data.player_id = myId;
+        data.app_version = APP_VERSION;
+        if (roomCode) data.room_code = roomCode;
+        const body = new URLSearchParams(data);
+        try {
+            // Timeout de 5s + timestamp anti-cache
+            const ctrl = new AbortController();
+            const tid = setTimeout(() => ctrl.abort(), 5000);
+            const r = await fetch(API + '?_t=' + Date.now(), {
+                method: 'POST',
+                body,
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+                signal: ctrl.signal
+            });
+            clearTimeout(tid);
+            const j = await r.json();
+            if (!j.ok && j.error && action !== 'get_state') showToast(j.error);
+            return j;
+        } catch(e) { return { ok: false }; }
+    }
+
+    let lastStateJSON = '';
+    let lastPhase = '';
+    let pollActive = false;
+    async function poll() {
+        if (!roomCode) return;
+        // Se poll anterior ainda está a correr, abortar silenciosamente
+        if (pollActive) return;
+        pollActive = true;
+        try {
+            const r = await api('get_state');
+            if (!r.ok) {
+                // Se o jogador não está na sala, limpar e voltar ao menu
+                if (r.error === 'Não estás nesta sala!' || r.error === 'Sala não encontrada!') {
+                    stopPolling();
+                    roomCode = null;
+                    state = null;
+                    lastStateJSON = '';
+                    lastPhase = '';
+                    localStorage.removeItem('jogos_room_justone');
+                    render();
+                }
+                return;
+            }
+            if (r.state) {
+                // Verificar se há nova versão no servidor
+                if (r.state.serverVersion && r.state.serverVersion !== APP_VERSION) {
+                    $('updateBanner').style.display = 'block';
+                }
+                const newJSON = JSON.stringify(r.state);
+                const changed = newJSON !== lastStateJSON;
+                lastStateJSON = newJSON;
+                state = r.state;
+
+                // Se a fase mudou, SEMPRE renderizar (mesmo com input focado)
+                if (state.phase !== lastPhase) {
+                    lastPhase = state.phase;
+                    render();
+                    return;
+                }
+
+                if (!changed) return; // Nada mudou, não fazer nada
+
+                // Estado mudou mas mesma fase - verificar se input está focado
+                const ae = document.activeElement;
+                const inputFocused = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA');
+                if (!inputFocused) {
+                    render();
+                } else {
+                    updateNonInputUI();
+                }
+            }
+        } finally {
+            pollActive = false;
+        }
+    }
+
+    function startPolling() { stopPolling(); pollActive = false; pollTimer = setInterval(poll, 1000); }
+    function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+    // ==================== ACTIONS ====================
+    async function createRoom() {
+        const name = $('inputName').value.trim();
+        if (!name) return showToast('Escreve o teu nome!');
+        const r = await api('create_room', { game: 'justone', name, difficulty: 'medium' });
+        if (r.ok) {
+            roomCode = r.code; state = r.state;
+            // Aplicar preferência guardada de removeDuplicates
+            const savedDup = localStorage.getItem('jogos_removeDuplicates');
+            if (savedDup !== null) {
+                const dupVal = JSON.parse(savedDup);
+                await api('set_remove_duplicates', { remove_duplicates: dupVal });
+                await poll();
+            }
+            render(); startPolling();
+        }
+    }
+
+    async function setDifficulty(diff) {
+        await api('set_difficulty', { difficulty: diff });
+        poll();
+    }
+
+    function toggleGameMenu() {
+        const m = $('gameMenu'), o = $('menuOverlay');
+        const open = m.classList.toggle('open');
+        o.classList.toggle('open', open);
+        if (open) updateMenuSettings();
+    }
+    function closeGameMenu() {
+        $('gameMenu').classList.remove('open');
+        $('menuOverlay').classList.remove('open');
+    }
+    function updateMenuSettings() {
+        // Dificuldade
+        const d = (state && state.difficulty) || 'medium';
+        $('menuDiff').innerHTML = ['easy','medium','hard'].map(v => {
+            const labels = {easy:'Fácil',medium:'Médio',hard:'Difícil'};
+            const cls = v === d ? 'gm-active-' + v : '';
+            return `<button class="${cls}" onclick="setDiffFromMenu('${v}')">${labels[v]}</button>`;
+        }).join('');
+        // Rondas
+        const r = (state && state.maxRounds) || 5;
+        $('menuRounds').innerHTML = [3,5,7,10].map(v => {
+            const cls = v === r ? 'gm-active-medium' : '';
+            return `<button class="${cls}" onclick="setRoundsFromMenu(${v})">${v}</button>`;
+        }).join('');
+        // Duplicadas toggle
+        const dup = state && state.removeDuplicates !== undefined ? state.removeDuplicates : true;
+        const toggle = $('toggleDup');
+        if (toggle) toggle.className = 'toggle-switch' + (dup ? ' on' : '');
+    }
+    async function setDiffFromMenu(diff) {
+        await api('set_difficulty', { difficulty: diff });
+        updateMenuSettings();
+        poll();
+    }
+    async function setRoundsFromMenu(rounds) {
+        await api('set_rounds', { rounds });
+        updateMenuSettings();
+        poll();
+    }
+    async function toggleDuplicates() {
+        const current = state && state.removeDuplicates !== undefined ? state.removeDuplicates : true;
+        const newVal = !current;
+        localStorage.setItem('jogos_removeDuplicates', JSON.stringify(newVal));
+        await api('set_remove_duplicates', { remove_duplicates: newVal });
+        // Atualizar state localmente para o toggle reagir imediatamente
+        if (state) state.removeDuplicates = newVal;
+        updateMenuSettings();
+        poll();
+    }
+    async function restartGame() {
+        closeGameMenu();
+        const d = (state && state.difficulty) || 'medium';
+        showConfirm('🔄', 'Recomeçar o jogo?', 'As pontuações serão resetadas para todos os jogadores.', 'Recomeçar', 'linear-gradient(135deg,#8b5cf6,#6366f1)', function(ok) {
+            if (!ok) return;
+            api('restart_game', { difficulty: d }).then(function() { poll(); });
+        });
+    }
+
+    async function joinRoom() {
+        const name = $('inputName').value.trim();
+        const code = $('inputCode').value.trim();
+        if (!name) return showToast('Escreve o teu nome!');
+        if (code.length !== 4) return showToast('Código deve ter 4 letras!');
+        const r = await api('join_room', { name, room_code: code });
+        if (r.ok) { roomCode = r.code; state = r.state; render(); startPolling(); }
+    }
+
+    async function doAction(action, data = {}) {
+        const r = await api(action, data);
+        if (r.ok) await poll();
+    }
+
+    // ==================== RENDER ====================
+    function $(id) { return document.getElementById(id); }
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        $(id).classList.add('active');
+        if (id !== 'screenResult') { var ra=$('resAction'); if(ra) ra.style.display='none'; }
+        if (id !== 'screenShowWord') clearShowWordTimer();
+        $('topBar').style.display = state ? 'flex' : 'none';
+    }
+
+    function render() {
+        if (!state) return showScreen('screenMenu');
+        $('roomCodeDisplay').textContent = state.code;
+        // Mostrar botão de menu para o anfitrião (exceto no menu principal)
+        const menuBtn = $('menuBtn');
+        if (menuBtn) menuBtn.style.display = state.isHost ? 'flex' : 'none';
+        switch(state.phase) {
+            case 'lobby': renderLobby(); break;
+            case 'pick_number': renderPickNumber(); break;
+            case 'show_word': renderShowWord(); break;
+            case 'writing': renderWriting(); break;
+            case 'review': renderReview(); break;
+            case 'guessing': renderGuessing(); break;
+            case 'result': renderResult(); break;
+            case 'gameover': renderGameover(); break;
+            case 'spectator': renderSpectator(); break;
+        }
+    }
+
+    function renderLobby() {
+        showScreen('screenLobby');
+        $('lobbyCode').textContent = state.code;
+        $('lobbyCount').textContent = `(${state.players.length})`;
+        $('lobbyPlayers').innerHTML = state.players.map(p => {
+            const vOk = !p.version || p.version === APP_VERSION;
+            const vBadge = p.version ? `<span style="font-size:10px;color:${vOk?'var(--dim)':'var(--red)'};margin-left:4px">${esc(p.version)}</span>` : '';
+            return `<li><div class="avatar">${p.name[0].toUpperCase()}</div><span class="name">${esc(p.name)}</span>${vBadge}${p.isHost?'<span class="host-badge">Anfitrião</span>':''}${p.id===state.myId?'<span style="color:var(--accent2);font-size:12px">Tu</span>':''}</li>`;
+        }).join('');
+        const d = state.difficulty || 'medium';
+        const labels = {easy:'Fácil',medium:'Médio',hard:'Difícil'};
+        if (state.isHost) {
+            $('lobbyDifficulty').innerHTML = `<div class="diff-card"><div class="diff-label">Dificuldade</div><div class="diff-btns"><button class="diff-btn ${d==='easy'?'active-easy':''}" onclick="setDifficulty('easy')">Fácil</button><button class="diff-btn ${d==='medium'?'active-medium':''}" onclick="setDifficulty('medium')">Médio</button><button class="diff-btn ${d==='hard'?'active-hard':''}" onclick="setDifficulty('hard')">Difícil</button></div></div>`;
+        } else {
+            $('lobbyDifficulty').innerHTML = `<div class="diff-card"><div class="diff-label">Dificuldade</div><div style="font-size:16px;font-weight:700;color:${d==='easy'?'#22c55e':d==='hard'?'#ef4444':'#f59e0b'}">${labels[d]}</div></div>`;
+        }
+        $('lobbyStartBtn').innerHTML = state.isHost
+            ? `<button class="btn btn-primary" onclick="doAction('start_game')" ${state.players.length<2?'disabled':''}>${state.players.length<2?'Precisas de '+(2-state.players.length)+' jogador(es) mais':'Começar Jogo'}</button>`
+            : '<div class="waiting">A aguardar que o anfitrião comece<span class="dots"></span></div>';
+    }
+
+    function renderPickNumber() {
+        // Atualizar conteúdo ANTES de mostrar o ecrã (evita flash da palavra anterior)
+        $('swRound').textContent=state.round; $('swMax').textContent=state.maxRounds;
+        const guesser = state.players[state.guesserIndex];
+        if (state.isGuesser) {
+            $('swContent').innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:12px">🔮</div><h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Tu és o Adivinhador!</h2><p class="text-dim">Os outros jogadores estão a ver uma carta com 5 palavras.<br>Escolhe um número sem saberes as palavras!</p></div>';
+            $('swAction').innerHTML =
+                '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px">' +
+                [1,2,3,4,5].map(function(n) {
+                    return '<button class="btn btn-primary" style="padding:20px 0;font-size:24px;font-weight:900;border-radius:16px" onclick="doAction(\'justone_pick_number\',{number:'+n+'})">' + n + '</button>';
+                }).join('') +
+                '</div>';
+        } else {
+            var wordsHtml = (state.wordCard||[]).map(function(w, i) {
+                return '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:14px;margin-bottom:8px">' +
+                    '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0">' + (i+1) + '</div>' +
+                    '<span style="font-size:18px;font-weight:700">' + esc(w) + '</span></div>';
+            }).join('');
+            $('swContent').innerHTML = '<div style="text-align:center;font-size:13px;color:var(--dim);margin-bottom:12px"><strong>' + esc(guesser.name) + '</strong> é o adivinhador e vai escolher um número</div>' + wordsHtml;
+            $('swAction').innerHTML = '<div class="waiting">A aguardar que ' + esc(guesser.name) + ' escolha um número<span class="dots"></span></div>';
+        }
+        showScreen('screenShowWord');
+    }
+
+    function renderShowWord() {
+        // Atualizar conteúdo ANTES de mostrar o ecrã (evita flash da palavra anterior)
+        $('swRound').textContent=state.round; $('swMax').textContent=state.maxRounds;
+        const guesser = state.players[state.guesserIndex];
+        const nonGuesserCount = state.players.length - 1;
+        if (state.isGuesser) {
+            $('swContent').innerHTML = '<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">🔮</div><h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Escolheste o número ' + (state.chosenNumber||'?') + '!</h2><p class="text-dim">Os outros jogadores estão a ver a palavra secreta e vão escrever pistas para te ajudar.</p></div>';
+            $('swAction').innerHTML = '<div class="waiting">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' jogadores viram a palavra<span class="dots"></span></div>';
+        } else if (state.isReady) {
+            clearShowWordTimer();
+            $('swContent').innerHTML = '<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">👍</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Memoriza a palavra!</h2><p class="text-dim">A palavra foi escondida para ninguém ao lado a ver.</p></div>';
+            $('swAction').innerHTML = '<div class="waiting">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' viram a palavra<span class="dots"></span></div>';
+        } else {
+            $('swContent').innerHTML = '<div style="text-align:center;font-size:13px;color:var(--dim);margin-bottom:8px"><strong>' + esc(guesser.name) + '</strong> escolheu o número <strong>' + (state.chosenNumber||'?') + '</strong></div><div class="big-word"><div class="label">A Palavra Secreta</div><div class="word">' + esc(state.word) + '</div></div>';
+            $('swAction').innerHTML = '<button class="btn btn-primary" id="swReadyBtn" onclick="clearShowWordTimer();doAction(\'justone_ready\')">Vi a Palavra ✓</button><p class="text-dim text-center mt-8">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' viram</p><p class="text-dim text-center" style="font-size:12px;margin-top:4px">Avança automaticamente em <strong id="swCountdown">15</strong>s</p>';
+            startShowWordTimer();
+        }
+        showScreen('screenShowWord');
+    }
+
+    function renderWriting() {
+        $('wrRound').textContent=state.round; $('wrMax').textContent=state.maxRounds;
+        updateTimer('wrTimer', state.timerEnd, 60000);
+        const guesser = state.players[state.guesserIndex];
+        if (state.isGuesser) {
+            $('wrContent').innerHTML = `<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">🤔</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">A aguardar pistas...</h2><p class="text-dim">Os outros jogadores estão a escrever pistas para ti.<br>Tem calma e espera!</p></div>`;
+            $('wrAction').innerHTML = '';
+        } else if (state.myClue) {
+            $('wrContent').innerHTML = `<div style="text-align:center;padding:12px 0"><div style="font-size:48px;margin-bottom:12px">✅</div><div style="margin-top:8px"><span class="status submitted">✓ Pista enviada</span></div><div style="margin-top:12px;font-size:22px;font-weight:800;color:var(--accent2)">${esc(state.myClue)}</div><p class="text-dim mt-8">${state.clueCount} de ${state.totalClueExpected} pistas recebidas</p></div>`;
+            $('wrAction').innerHTML = '';
+        } else {
+            $('wrContent').innerHTML = `<p style="text-align:center;color:var(--dim);font-size:13px;margin-bottom:4px">Adivinhador: <strong>${esc(guesser.name)}</strong> · ${state.clueCount}/${state.totalClueExpected} pistas</p>`;
+            $('wrAction').innerHTML = `<div class="input-group mt-16"><label>A tua pista (uma só palavra)</label><input type="text" id="clueInput" placeholder="Escreve uma palavra..." maxlength="30" autocomplete="off" onkeydown="if(event.key==='Enter')submitClue()"></div><button class="btn btn-primary" onclick="submitClue()">Enviar Pista</button>`;
+            setTimeout(()=>{const el=$('clueInput');if(el)el.focus();},100);
+        }
+        showScreen('screenWriting');
+    }
+
+    function normalizePT(s) {
+        return s.toLowerCase().trim()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/ç/g, 'c');
+    }
+    function getStemPT(w) {
+        let s = normalizePT(w);
+        if (s.length <= 3) return s;
+        const suffixes = ['mente','ções','ação','ismo','ista','ável','ível','ando','endo','indo','ados','idos','adas','idas','ores','eira','eiro','inha','inho','ões','ais','eis','ado','ido','ada','ida','oso','osa','dor','tor','ção','zes','es','ns','is','os','as','ar','er','ir','s'];
+        for (const suf of suffixes) {
+            if (s.length > suf.length + 2 && s.endsWith(suf)) return s.slice(0, -suf.length);
+        }
+        return s;
+    }
+    function isDerivativePT(clue, word) {
+        const nc = normalizePT(clue), nw = normalizePT(word);
+        if (nc.length < 3 || nw.length < 3) return false;
+        if (nc === nw) return true;
+        if (nc.includes(nw) || nw.includes(nc)) return true;
+        const sc = getStemPT(clue), sw = getStemPT(word);
+        if (sc.length >= 3 && sw.length >= 3 && sc === sw) return true;
+        return false;
+    }
+    function submitClue() {
+        const el = $('clueInput'); if(!el) return;
+        const clue = el.value.trim();
+        if (!clue) return showToast('Escreve uma pista!');
+        if (clue.includes(' ')) return showToast('Apenas uma palavra!');
+        // Verificar derivados no frontend (a palavra está em state.word para não-adivinhadores)
+        if (state && state.word && isDerivativePT(clue, state.word)) {
+            return showToast('Não podes usar derivados da palavra secreta!');
+        }
+        doAction('justone_clue', { clue });
+    }
+
+    function renderReview() {
+        $('rvRound').textContent=state.round; $('rvMax').textContent=state.maxRounds;
+        if (state.isGuesser) {
+            // Adivinhador NÃO pode ver a palavra nem pistas durante a revisão
+            $('rvWord').textContent = '???';
+            $('rvClues').innerHTML = '<div style="text-align:center;padding:24px 0"><div style="font-size:48px;margin-bottom:12px">🤫</div><h2 style="font-size:18px;font-weight:800;margin-bottom:8px">Sem espiar!</h2><p class="text-dim">O anfitrião está a rever as pistas para ti...</p></div>';
+            $('rvAction').innerHTML = '<div class="waiting">A aguardar<span class="dots"></span></div>';
+        } else {
+            $('rvWord').textContent = state.word;
+            $('rvClues').innerHTML = (state.allClues||[]).map(c => `<div class="clue-card ${c.removed?'removed':''}"><span class="clue-text">${esc(c.clue)}</span><span class="clue-author">${esc(c.playerName)}</span>${c.removed?'<span class="removed-badge">Duplicada</span>':''}</div>`).join('');
+            $('rvAction').innerHTML = state.isHost
+                ? `<button class="btn btn-primary" onclick="doAction('justone_confirm_review')">Mostrar Pistas ao Adivinhador</button>`
+                : '<div class="waiting">A aguardar revisão<span class="dots"></span></div>';
+        }
+    }
+
+    function renderGuessing() {
+        showScreen('screenGuessing');
+        $('gsRound').textContent=state.round; $('gsMax').textContent=state.maxRounds;
+        updateTimer('gsTimer', state.timerEnd, 90000);
+        if (state.isGuesser) {
+            let ch = '';
+            if (state.visibleClues && state.visibleClues.length > 0) {
+                ch = state.visibleClues.map(c=>`<div class="clue-card"><span class="clue-text">${esc(c.clue)}</span><span class="clue-author">${esc(c.playerName)}</span></div>`).join('');
+            } else {
+                ch = '<div style="text-align:center;padding:16px;color:var(--red)">Todas as pistas foram eliminadas! 😱</div>';
+            }
+            $('gsContent').innerHTML = `<div style="text-align:center;margin-bottom:16px"><div style="font-size:36px;margin-bottom:8px">🎯</div><h2 style="font-size:18px;font-weight:800">As tuas pistas:</h2></div>${ch}`;
+            $('gsAction').innerHTML = `<div class="input-group mt-16"><label>A tua resposta</label><input type="text" id="guessInput" placeholder="Qual é a palavra?" maxlength="40" autocomplete="off" onkeydown="if(event.key==='Enter')submitGuess()"></div><button class="btn btn-green mb-16" onclick="submitGuess()">Adivinhar!</button><button class="btn btn-ghost" onclick="doAction('justone_skip')">Passar ✕</button>`;
+            setTimeout(()=>{const el=$('guessInput');if(el)el.focus();},100);
+        } else {
+            let cluesHtml = '';
+            if (state.allClues && state.allClues.length > 0) {
+                cluesHtml = '<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px">Pistas enviadas</div>' +
+                    state.allClues.map(c => `<div class="clue-card ${c.removed?'removed':''}"><span class="clue-text">${esc(c.clue)}</span><span class="clue-author">${esc(c.playerName)}</span>${c.removed?'<span class="removed-badge">Duplicada</span>':''}</div>`).join('') +
+                    '</div>';
+            }
+            $('gsContent').innerHTML = `<div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:12px">🎯</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">O adivinhador está a pensar...</h2><p class="text-dim">A aguardar a resposta de <strong>${esc(state.players[state.guesserIndex]?.name)}</strong></p></div><div class="card"><div class="big-word" style="padding:8px"><div class="label">Palavra</div><div class="word" style="font-size:28px">${esc(state.word)}</div></div>${cluesHtml}</div>`;
+            $('gsAction').innerHTML = '';
+        }
+    }
+
+    function submitGuess() {
+        const el = $('guessInput'); if(!el) return;
+        const guess = el.value.trim();
+        if (!guess) return showToast('Escreve a tua resposta!');
+        doAction('justone_guess', { guess });
+    }
+
+    function renderResult() {
+        $('resDisplay').innerHTML = state.guessCorrect
+            ? '<div class="emoji">🎉</div><div class="msg correct">Correto!</div>'
+            : `<div class="emoji">😢</div><div class="msg wrong">Errado!</div><div style="font-size:16px;color:var(--dim);margin-top:8px">Resposta: "${esc(state.guess)}"</div>`;
+        $('resWord').textContent = state.word;
+        $('resClues').innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;margin-bottom:8px">Pistas</div>' +
+            (state.allClues||[]).map(c=>`<div class="clue-card ${c.removed?'removed':''}"><span class="clue-text">${esc(c.clue)}</span><span class="clue-author">${esc(c.playerName)}</span>${c.removed?'<span class="removed-badge">Duplicada</span>':''}</div>`).join('');
+        renderScores('resScores');
+        const resAction = $('resAction');
+        if (state.guessCorrect) {
+            resAction.innerHTML = '<div class="waiting">Próxima ronda em breve<span class="dots"></span></div>';
+        } else {
+            resAction.innerHTML = state.isHost
+                ? `<button class="btn btn-primary" style="width:100%;padding:18px;font-size:18px;animation:pulse 1.5s infinite" onclick="doAction('next_round')">Próxima Ronda →</button>`
+                : '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+        }
+        resAction.style.display = 'block';
+        showScreen('screenResult');
+    }
+
+    function renderGameover() {
+        showScreen('screenGameover');
+        renderScores('goScores');
+        $('goAction').innerHTML = state.isHost
+            ? `<button class="btn btn-primary mb-16" onclick="doAction('new_game')">Jogar de Novo</button><span class="btn btn-ghost" style="display:block;cursor:pointer" onclick="leaveRoom()">Voltar ao Menu</span>`
+            : '<div class="waiting">A aguardar o anfitrião<span class="dots"></span></div>';
+    }
+
+    function renderSpectator() {
+        showScreen('screenSpectator');
+        $('specPlayers').innerHTML = state.players.map(p => `<li><div class="avatar">${p.name[0].toUpperCase()}</div><span class="name">${esc(p.name)}</span>${p.isHost?'<span class="host-badge">Anfitrião</span>':''}${p.id===state.myId?'<span style="color:var(--accent2);font-size:12px">Tu</span>':''}</li>`).join('');
+    }
+
+    function renderScores(id) {
+        const sorted = [...state.players].sort((a,b)=>b.score-a.score);
+        const m = ['🥇','🥈','🥉'];
+        $(id).innerHTML = sorted.map((p,i)=>`<div class="score-row"><div class="rank">${m[i]||(i+1)}</div><div class="sname">${esc(p.name)}${p.id===state.myId?' <span style="color:var(--accent2);font-size:11px">(tu)</span>':''}</div><div class="spoints">${p.score} pt</div></div>`).join('');
+    }
+
+    // ==================== NON-DESTRUCTIVE UI UPDATE ====================
+    // Chamado quando o estado muda mas há um input focado (para não fechar o teclado)
+    function updateNonInputUI() {
+        if (!state) return;
+        $('roomCodeDisplay').textContent = state.code;
+        if (state.phase === 'writing') updateTimer('wrTimer', state.timerEnd, 60000);
+        if (state.phase === 'guessing') updateTimer('gsTimer', state.timerEnd, 90000);
+    }
+
+    // ==================== LEAVE ROOM ====================
+    function leaveRoom() {
+        showConfirm('🚪', 'Sair da sala?', 'Vais abandonar o jogo. Os outros jogadores continuam.', 'Sair', 'linear-gradient(135deg,#ef4444,#dc2626)', function(ok) {
+            if (!ok) return;
+            var code = roomCode;
+            stopPolling();
+            if (code) {
+                try {
+                    navigator.sendBeacon(API, new URLSearchParams({
+                        action: 'leave_room', room_code: code, player_id: myId
+                    }));
+                } catch(e) {}
+            }
+            roomCode = null;
+            state = null;
+            lastStateJSON = '';
+            lastPhase = '';
+            localStorage.removeItem('jogos_room_justone');
+            render();
+        });
+    }
+
+    // ==================== HELPERS ====================
+    function shareInvite() {
+        var base = location.origin + location.pathname.replace(/[^\/]*$/, '');
+        var link = base + 'convite.html?jogo=justone&sala=' + state.code;
+        var msg = '🎮 Vem jogar Just One comigo!\n\n💡 Sala: *' + state.code + '*\n\n👉 ' + link;
+
+        if (navigator.share) {
+            navigator.share({ title: 'Just One - Jogos de Festa', text: msg }).catch(function(){});
+        } else {
+            var waUrl = 'https://wa.me/?text=' + encodeURIComponent(msg);
+            window.open(waUrl, '_blank');
+        }
+    }
+
+    function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+    let swTimerInt = null;
+    function startShowWordTimer() {
+        clearShowWordTimer();
+        let secs = 15;
+        const cd = $('swCountdown');
+        if (cd) cd.textContent = secs;
+        swTimerInt = setInterval(function() {
+            secs--;
+            const cdEl = $('swCountdown');
+            if (cdEl) cdEl.textContent = secs;
+            if (secs <= 0) { clearShowWordTimer(); if (state && state.phase === 'show_word' && !state.isReady) doAction('justone_ready'); }
+        }, 1000);
+    }
+    function clearShowWordTimer() {
+        if (swTimerInt) { clearInterval(swTimerInt); swTimerInt = null; }
+    }
+    let timerInt;
+    function updateTimer(elId,end,total){if(timerInt)clearInterval(timerInt);const el=$(elId);if(!end){el.style.width='100%';return;}function t(){const r=Math.max(0,end-Date.now());el.style.width=(r/total*100)+'%';if(r<=0)clearInterval(timerInt);}t();timerInt=setInterval(t,500);}
+    function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+    // Mostrar versão
+    if ($('versionTag')) $('versionTag').textContent = APP_VERSION;
+
+    // Escutar Service Worker updates
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', e => {
+            if (e.data && e.data.type === 'SW_UPDATED') {
+                $('updateBanner').style.display = 'block';
+            }
+        });
+    }
+
+    $('inputName').value = localStorage.getItem('jogoNome')||'';
+    $('inputName').addEventListener('input', e=>localStorage.setItem('jogoNome',e.target.value));
+    const params = new URLSearchParams(location.search);
+    if(params.get('sala')) $('inputCode').value = params.get('sala');
+
+    // Botão muda para roxo quando código tem 4 caracteres
+    function updateJoinBtn() {
+        const btn = $('btnJoin');
+        if ($('inputCode').value.trim().length >= 4) {
+            btn.className = 'btn btn-primary';
+        } else {
+            btn.className = 'btn btn-ghost';
+        }
+    }
+    $('inputCode').addEventListener('input', updateJoinBtn);
+    updateJoinBtn();
+
+    // Reconectar automaticamente se tiver sala guardada
+    const savedRoom = localStorage.getItem('jogos_room_justone');
+    if (savedRoom && !params.get('sala')) {
+        roomCode = savedRoom;
+        poll().then(() => {
+            if (state) {
+                // Sala existe, reconectar
+                startPolling();
+            } else {
+                // Sala já não existe, limpar
+                roomCode = null;
+                localStorage.removeItem('jogos_room_justone');
+            }
+        });
+    }
+
+    // Guardar sala quando entrar
+    const origCreate = createRoom;
+    createRoom = async function() {
+        await origCreate();
+        if (roomCode) localStorage.setItem('jogos_room_justone', roomCode);
+    };
+    const origJoin = joinRoom;
+    joinRoom = async function() {
+        await origJoin();
+        if (roomCode) localStorage.setItem('jogos_room_justone', roomCode);
+    };
+    </script>
+<style>
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,0.5)}50%{box-shadow:0 0 0 12px rgba(139,92,246,0)}}
+</style>
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)_confirmCancel()">
+  <div style="background:var(--card);border-radius:24px;padding:28px 24px;max-width:320px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);text-align:center;">
+    <div id="confirmIcon" style="font-size:48px;margin-bottom:12px;"></div>
+    <div id="confirmTitle" style="font-size:18px;font-weight:800;margin-bottom:8px;"></div>
+    <div id="confirmMsg" style="font-size:14px;color:var(--dim);margin-bottom:24px;line-height:1.5;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="_confirmCancel()" style="flex:1;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button id="confirmOkBtn" onclick="_confirmOk()" style="flex:1;padding:14px;border-radius:14px;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Confirmar</button>
+    </div>
+  </div>
+</div>
+<script>
+  var _confirmCallback=null;
+  function showConfirm(icon,title,msg,okLabel,okColor,cb){
+    document.getElementById('confirmIcon').textContent=icon;
+    document.getElementById('confirmTitle').textContent=title;
+    document.getElementById('confirmMsg').textContent=msg;
+    var btn=document.getElementById('confirmOkBtn');
+    btn.textContent=okLabel||'Confirmar';
+    btn.style.background=okColor||'linear-gradient(135deg,#ef4444,#dc2626)';
+    _confirmCallback=cb;
+    var m=document.getElementById('confirmModal');
+    m.style.display='flex';
+  }
+  function _confirmOk(){
+    document.getElementById('confirmModal').style.display='none';
+    if(_confirmCallback){var cb=_confirmCallback;_confirmCallback=null;cb(true);}
+  }
+  function _confirmCancel(){
+    document.getElementById('confirmModal').style.display='none';
+    _confirmCallback=null;
+  }
+</script>
+</body>
+</html>
