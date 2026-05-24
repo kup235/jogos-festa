@@ -595,7 +595,6 @@
     }
 
     function renderResult() {
-        showScreen('screenResult');
         $('resDisplay').innerHTML = state.guessCorrect
             ? '<div class="emoji">🎉</div><div class="msg correct">Correto!</div>'
             : `<div class="emoji">😢</div><div class="msg wrong">Errado!</div><div style="font-size:16px;color:var(--dim);margin-top:8px">Resposta: "${esc(state.guess)}"</div>`;
