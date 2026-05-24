@@ -584,6 +584,7 @@
             $('gsContent').innerHTML = `<div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:12px">🎯</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">O adivinhador está a pensar...</h2><p class="text-dim">A aguardar a resposta de <strong>${esc(state.players[state.guesserIndex]?.name)}</strong></p></div><div class="card"><div class="big-word" style="padding:8px"><div class="label">Palavra</div><div class="word" style="font-size:28px">${esc(state.word)}</div></div>${cluesHtml}</div>`;
             $('gsAction').innerHTML = '';
         }
+        showScreen('screenGuessing');
     }
 
     function submitGuess() {
