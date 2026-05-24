@@ -244,7 +244,7 @@
         if (r.ok) { roomCode = r.code; state = r.state; render(); startPolling(); }
     }
 
-    async function doAction(action, data = {}) { await api(action, data); poll(); }
+    async function doAction(action, data = {}) { const r = await api(action, data); if (r.ok) await poll(); }
 
     function $(id) { return document.getElementById(id); }
     function showScreen(id) {
