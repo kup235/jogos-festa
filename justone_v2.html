@@ -448,11 +448,10 @@
     }
 
     function renderPickNumber() {
-        showScreen('screenShowWord');
+        // Atualizar conteúdo ANTES de mostrar o ecrã (evita flash da palavra anterior)
         $('swRound').textContent=state.round; $('swMax').textContent=state.maxRounds;
         const guesser = state.players[state.guesserIndex];
         if (state.isGuesser) {
-            // O adivinhador vê 5 números para escolher
             $('swContent').innerHTML = '<div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:12px">🔮</div><h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Tu és o Adivinhador!</h2><p class="text-dim">Os outros jogadores estão a ver uma carta com 5 palavras.<br>Escolhe um número sem saberes as palavras!</p></div>';
             $('swAction').innerHTML =
                 '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px">' +
@@ -461,7 +460,6 @@
                 }).join('') +
                 '</div>';
         } else {
-            // Os outros veem a carta com 5 palavras
             var wordsHtml = (state.wordCard||[]).map(function(w, i) {
                 return '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:14px;margin-bottom:8px">' +
                     '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0">' + (i+1) + '</div>' +
@@ -470,27 +468,27 @@
             $('swContent').innerHTML = '<div style="text-align:center;font-size:13px;color:var(--dim);margin-bottom:12px"><strong>' + esc(guesser.name) + '</strong> é o adivinhador e vai escolher um número</div>' + wordsHtml;
             $('swAction').innerHTML = '<div class="waiting">A aguardar que ' + esc(guesser.name) + ' escolha um número<span class="dots"></span></div>';
         }
+        showScreen('screenShowWord');
     }
 
     function renderShowWord() {
-        showScreen('screenShowWord');
+        // Atualizar conteúdo ANTES de mostrar o ecrã (evita flash da palavra anterior)
         $('swRound').textContent=state.round; $('swMax').textContent=state.maxRounds;
         const guesser = state.players[state.guesserIndex];
         const nonGuesserCount = state.players.length - 1;
         if (state.isGuesser) {
             $('swContent').innerHTML = '<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">🔮</div><h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Escolheste o número ' + (state.chosenNumber||'?') + '!</h2><p class="text-dim">Os outros jogadores estão a ver a palavra secreta e vão escrever pistas para te ajudar.</p></div>';
             $('swAction').innerHTML = '<div class="waiting">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' jogadores viram a palavra<span class="dots"></span></div>';
+        } else if (state.isReady) {
+            clearShowWordTimer();
+            $('swContent').innerHTML = '<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">👍</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Memoriza a palavra!</h2><p class="text-dim">A palavra foi escondida para ninguém ao lado a ver.</p></div>';
+            $('swAction').innerHTML = '<div class="waiting">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' viram a palavra<span class="dots"></span></div>';
         } else {
             $('swContent').innerHTML = '<div style="text-align:center;font-size:13px;color:var(--dim);margin-bottom:8px"><strong>' + esc(guesser.name) + '</strong> escolheu o número <strong>' + (state.chosenNumber||'?') + '</strong></div><div class="big-word"><div class="label">A Palavra Secreta</div><div class="word">' + esc(state.word) + '</div></div>';
-            if (state.isReady) {
-                clearShowWordTimer();
-                $('swContent').innerHTML = '<div style="text-align:center;padding:20px 0"><div style="font-size:48px;margin-bottom:12px">👍</div><h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Memoriza a palavra!</h2><p class="text-dim">A palavra foi escondida para ninguém ao lado a ver.</p></div>';
-                $('swAction').innerHTML = '<div class="waiting">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' viram a palavra<span class="dots"></span></div>';
-            } else {
-                $('swAction').innerHTML = '<button class="btn btn-primary" id="swReadyBtn" onclick="clearShowWordTimer();doAction(\'justone_ready\')">Vi a Palavra ✓</button><p class="text-dim text-center mt-8">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' viram</p><p class="text-dim text-center" style="font-size:12px;margin-top:4px">Avança automaticamente em <strong id="swCountdown">15</strong>s</p>';
-                startShowWordTimer();
-            }
+            $('swAction').innerHTML = '<button class="btn btn-primary" id="swReadyBtn" onclick="clearShowWordTimer();doAction(\'justone_ready\')">Vi a Palavra ✓</button><p class="text-dim text-center mt-8">' + (state.readyCount||0) + ' de ' + nonGuesserCount + ' viram</p><p class="text-dim text-center" style="font-size:12px;margin-top:4px">Avança automaticamente em <strong id="swCountdown">15</strong>s</p>';
+            startShowWordTimer();
         }
+        showScreen('screenShowWord');
     }
 
     function renderWriting() {
