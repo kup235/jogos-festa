@@ -310,9 +310,9 @@ function handleApi(req, res) {
         if (room.timerEnd && now() > room.timerEnd) {
             let changed = false;
             if (room.game === 'justone' && room.phase === 'writing') { justoneCheckDuplicates(room); room.phase = 'guessing'; room.timerEnd = now() + 90000; changed = true; }
-            if (room.game === 'justone' && room.phase === 'guessing') { room.guess = '(tempo esgotado)'; room.guessCorrect = false; room.phase = 'result'; room.timerEnd = null; changed = true; }
-            if (room.game === 'justone' && room.phase === 'result' && room.guessCorrect) { if (room.round >= room.maxRounds) room.phase = 'gameover'; else justoneNewRound(room); room.timerEnd = null; changed = true; }
-            if (room.game === 'impostor' && room.phase === 'discussion') { room.phase = 'voting'; room.timerEnd = now() + 30000; changed = true; }
+            else if (room.game === 'justone' && room.phase === 'guessing') { room.guess = '(tempo esgotado)'; room.guessCorrect = false; room.phase = 'result'; room.timerEnd = null; changed = true; }
+            else if (room.game === 'justone' && room.phase === 'result' && room.guessCorrect) { if (room.round >= room.maxRounds) room.phase = 'gameover'; else justoneNewRound(room); room.timerEnd = null; changed = true; }
+            else if (room.game === 'impostor' && room.phase === 'discussion') { room.phase = 'voting'; room.timerEnd = now() + 30000; changed = true; }
             if (changed) saveRoom(room);
         }
         respond({ ok: true, state: getSafeState(room, playerId) }); break;
