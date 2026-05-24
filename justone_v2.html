@@ -691,7 +691,7 @@
             secs--;
             const cdEl = $('swCountdown');
             if (cdEl) cdEl.textContent = secs;
-            if (secs <= 0) { clearShowWordTimer(); doAction('justone_ready'); }
+            if (secs <= 0) { clearShowWordTimer(); if (state && state.phase === 'show_word' && !state.isReady) doAction('justone_ready'); }
         }, 1000);
     }
     function clearShowWordTimer() {
