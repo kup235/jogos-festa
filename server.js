@@ -396,6 +396,7 @@ function handleApi(req, res) {
     }
     case 'next_round': {
         const room = loadRoom(roomCode); if (!room || room.host !== playerId) return error('Ação inválida!');
+        if (room.phase !== 'result') return respond({ ok: true });
         if (room.round >= room.maxRounds) room.phase = 'gameover';
         else { if (room.game === 'justone') justoneNewRound(room); else impostorNewRound(room); }
         saveRoom(room); respond({ ok: true }); break;
