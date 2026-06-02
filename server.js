@@ -471,7 +471,7 @@ function handleApi(req, res) {
                     if (newGuesserIdx >= 0) room.guesserIndex = newGuesserIdx;
                     const nonGuessers = room.players.filter(pl => pl.id !== oldGuesserId);
                     if (room.phase === 'show_word' && room.readyPlayers.length >= nonGuessers.length) { room.phase = 'writing'; room.timerEnd = now() + 60000; room.readyPlayers = []; }
-                    if (room.phase === 'writing' && Object.keys(room.clues || {}).length >= nonGuessers.length) { justoneCheckDuplicates(room); room.phase = 'guessing'; room.timerEnd = now() + 90000; }
+                    if (room.phase === 'writing' && Object.keys(room.clues || {}).length >= nonGuessers.length) { justoneCheckDuplicates(room); room.phase = 'review'; room.timerEnd = null; }
                 }
             }
             if (room.game === 'impostor') {
