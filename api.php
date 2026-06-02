@@ -642,11 +642,11 @@ case 'get_state':
         $now = round(microtime(true) * 1000);
 
         if ($room['timerEnd'] && $now > $room['timerEnd']) {
-            // Just One: tempo de escrita expirou → avançar direto para adivinhar
+            // Just One: tempo de escrita expirou → avançar para revisão
             if ($room['game'] === 'justone' && $room['phase'] === 'writing') {
                 justoneCheckDuplicates($room);
-                $room['phase'] = 'guessing';
-                $room['timerEnd'] = round(microtime(true) * 1000) + 90000;
+                $room['phase'] = 'review';
+                $room['timerEnd'] = null;
                 $changed = true;
             }
             // Just One: tempo de adivinhar expirou → conta como "passou"
@@ -725,7 +725,7 @@ case 'start_game':
     $room = loadRoomLocked($roomCode);
     if (!$room) error('Sala não encontrada!');
     if ($room['host'] !== $playerId) error('Só o anfitrião pode começar!');
-    if (count($room['players']) < 3) error('Precisas de pelo menos 3 jogadores!');
+    if (count($room['players']) < 2) error('Precisas de pelo menos 2 jogadores!');
 
     // Guardar jogadores ativos (quem estava quando o jogo começou)
     $room['activePlayers'] = array_map(function($p) { return $p['id']; }, $room['players']);
@@ -800,12 +800,12 @@ case 'justone_clue':
 
     $room['clues'][$playerId] = $clue;
 
-    // Check if all submitted → avançar direto para adivinhar (sem revisão)
+    // Check if all submitted → avançar para revisão (host confirma antes de adivinhar)
     $nonGuessers = array_filter($room['players'], function($p) use ($guesserId) { return $p['id'] !== $guesserId; });
     if (count($room['clues']) >= count($nonGuessers)) {
         justoneCheckDuplicates($room);
-        $room['phase'] = 'guessing';
-        $room['timerEnd'] = round(microtime(true) * 1000) + 90000;
+        $room['phase'] = 'review';
+        $room['timerEnd'] = null;
     }
     saveRoom($room);
     respond(['ok' => true]);
@@ -1066,11 +1066,11 @@ case 'leave_room':
                     $room['readyPlayers'] = [];
                 }
 
-                // writing: verificar se todas as pistas foram recebidas
+                // writing: verificar se todas as pistas foram recebidas → revisão
                 if ($room['phase'] === 'writing' && count($room['clues'] ?? []) >= count($nonGuessers)) {
                     justoneCheckDuplicates($room);
-                    $room['phase'] = 'guessing';
-                    $room['timerEnd'] = round(microtime(true) * 1000) + 90000;
+                    $room['phase'] = 'review';
+                    $room['timerEnd'] = null;
                 }
             }
         }
