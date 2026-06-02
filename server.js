@@ -391,6 +391,8 @@ function handleApi(req, res) {
     }
     case 'justone_skip': {
         const room = loadRoom(roomCode); if (!room || room.phase !== 'guessing') return error('Ação inválida!');
+        const guesserId = room.players[room.guesserIndex]?.id || '';
+        if (playerId !== guesserId) return error('Só o adivinhador pode passar!');
         room.guess = '(passou)'; room.guessCorrect = false; room.phase = 'result'; room.timerEnd = null;
         saveRoom(room); respond({ ok: true }); break;
     }
@@ -506,6 +508,7 @@ function handleApi(req, res) {
         const room = loadRoom(roomCode); if (!room || room.host !== playerId) return error('Ação inválida!');
         if (p.difficulty && ['easy','medium','hard'].includes(p.difficulty)) room.difficulty = p.difficulty;
         room.round = 0; room.guesserIndex = -1; for (const pl of room.players) pl.score = 0;
+        room.activePlayers = room.players.map(pl => pl.id);
         room.timerEnd = null; room.readyPlayers = [];
         room.wordCard = []; room.chosenNumber = null; room.currentWord = null;
         room.clues = {}; room.removedClues = []; room.guess = null; room.guessCorrect = null;
