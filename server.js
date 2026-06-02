@@ -372,7 +372,7 @@ function handleApi(req, res) {
         if (isDerivative(clue, room.currentWord)) return error('Não podes usar a palavra secreta nem derivados dela!');
         room.clues[playerId] = clue;
         const nonGuessers = room.players.filter(pl => pl.id !== guesserId);
-        if (Object.keys(room.clues).length >= nonGuessers.length) { justoneCheckDuplicates(room); room.phase = 'guessing'; room.timerEnd = now() + 90000; }
+        if (Object.keys(room.clues).length >= nonGuessers.length) { justoneCheckDuplicates(room); room.phase = 'review'; room.timerEnd = null; }
         saveRoom(room); respond({ ok: true }); break;
     }
     case 'justone_confirm_review': {
