@@ -642,11 +642,11 @@ case 'get_state':
         $now = round(microtime(true) * 1000);
 
         if ($room['timerEnd'] && $now > $room['timerEnd']) {
-            // Just One: tempo de escrita expirou → avançar para revisão
+            // Just One: tempo de escrita expirou → avançar para adivinhar
             if ($room['game'] === 'justone' && $room['phase'] === 'writing') {
                 justoneCheckDuplicates($room);
-                $room['phase'] = 'review';
-                $room['timerEnd'] = null;
+                $room['phase'] = 'guessing';
+                $room['timerEnd'] = round(microtime(true) * 1000) + 90000;
                 $changed = true;
             }
             // Just One: tempo de adivinhar expirou → conta como "passou"
@@ -800,12 +800,12 @@ case 'justone_clue':
 
     $room['clues'][$playerId] = $clue;
 
-    // Check if all submitted → avançar para revisão (host confirma antes de adivinhar)
+    // Check if all submitted → avançar direto para adivinhar
     $nonGuessers = array_filter($room['players'], function($p) use ($guesserId) { return $p['id'] !== $guesserId; });
     if (count($room['clues']) >= count($nonGuessers)) {
         justoneCheckDuplicates($room);
-        $room['phase'] = 'review';
-        $room['timerEnd'] = null;
+        $room['phase'] = 'guessing';
+        $room['timerEnd'] = round(microtime(true) * 1000) + 90000;
     }
     saveRoom($room);
     respond(['ok' => true]);
@@ -1066,11 +1066,11 @@ case 'leave_room':
                     $room['readyPlayers'] = [];
                 }
 
-                // writing: verificar se todas as pistas foram recebidas → revisão
+                // writing: verificar se todas as pistas foram recebidas
                 if ($room['phase'] === 'writing' && count($room['clues'] ?? []) >= count($nonGuessers)) {
                     justoneCheckDuplicates($room);
-                    $room['phase'] = 'review';
-                    $room['timerEnd'] = null;
+                    $room['phase'] = 'guessing';
+                    $room['timerEnd'] = round(microtime(true) * 1000) + 90000;
                 }
             }
         }
